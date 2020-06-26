@@ -18,12 +18,15 @@
 			</div>
 			<b-button class="is-primary" v-if="!matchDefaultTestnet && is_editing_allowed" @click="switchToDefaultTestnet" style="margin:10px;">Switch to testnet default</b-button>				
 			<b-button class="is-primary" v-if="!matchDefault && is_editing_allowed" @click="switchToDefault" style="margin:10px;">Switch to default</b-button>
+	
+			<b-button class="is-primary"  v-if="this.$store.state.isConnected" @click="disconnect" style="margin:10px;">Disconnect</b-button>
+			<b-button class="is-primary"  v-else @click="connect" style="margin:10px;">Connect</b-button>
 		</article>
 	</div>
 </template>
 <script>
 const isUrl = require('is-url')
-//import core from '../js/core.js'
+import core from '../js/core.js'
 export default {
   props: {
 	},
@@ -48,7 +51,7 @@ export default {
 	},
 	computed: {
 		is_editing_allowed(){
-			return !this.$store.state.isRunning;
+			return !this.$store.state.isConnected;
 		},
 		matchDefaultTestnet() {
 			return this.connections.odex_ws_url == this.default_odex_ws_url_testnet 
@@ -74,6 +77,27 @@ export default {
 		this.onChange()
 	},
 	methods:{
+
+		connect: async function(){
+			const err = await core.start(Object.assign(
+				this.$store.state.connections,
+				this.$store.state.credentials,
+			));
+			if (err)
+				this.$buefy.toast.open({
+					duration: 5000,
+					message: err,
+					position: 'is-bottom',
+					type: 'is-danger'
+				})
+		//	EventBus.$emit('connect');
+		},
+		disconnect: function(){
+						core.stop();
+
+		//	EventBus.$emit('disconnect');
+		},
+
 		saveConnections(){
 			for (var key in this.connections){
 				localStorage.setItem(key, this.connections[key]) 

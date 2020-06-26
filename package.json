@@ -12,6 +12,7 @@
     "axios": "^0.19.2",
     "buefy": "^0.8.13",
     "is-url": "^1.2.4",
+    "moment": "^2.27.0",
     "node-sass": "^4.13.1",
     "obyte": "^0.1.8",
     "odex-client-browser": "git+https://github.com/byteball/odex-client-browser.git",

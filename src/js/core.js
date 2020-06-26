@@ -1,21 +1,75 @@
 const odex = require('odex-client-browser');
 const obyte = require('obyte');
 const conf = require('./conf.js');
-const { getBase64Hash } = require('obyte/lib/internal');
 const { getChash160 } = require('obyte/lib/utils');
 
 var store,orders,userConf;
 
-function initEvents(){
 
-
-
+async function wait500ms(){
+	return new Promise((resolve)=>{
+		setTimeout(resolve, 500);
+	});
 }
 
-async function issueAssets(arrFixtures, amount){
 
-	let additionalMessages = []
-	let outputs = []
+async function transferToOdex(arrFixtures, callbackTransferred, callbackCompleted){
+	await refreshWalletBalances();
+	const client = new obyte.Client(userConf.hub_ws_url, userConf);
+		for (var i=0; i<arrFixtures.length; i++){
+			const fixture = arrFixtures[i];
+			console.log(fixture);
+			if (fixture.assets){
+				for (var key in fixture.assets){
+					const asset = fixture.assets[key];
+					if (store.state.wallet_balances[asset]){
+						const amount = store.state.wallet_balances[asset].stable + store.state.wallet_balances[asset].pending;
+						console.log(amount);
+
+						if (amount === 0){
+							callbackTransferred(asset, 0);
+							continue;
+						}
+						const params = [
+						{
+							app: 'payment',
+							payload:{
+								asset: asset,
+								outputs: [{
+									amount: amount,
+									address: conf.odex_aa_address
+								}]
+							}
+						},
+						{
+							app: 'payment',
+							payload:{
+								outputs: [{
+									amount: 10000,
+									address: conf.odex_aa_address
+								}]
+							}
+						}];
+						console.log(params);
+						try {
+							const unit = await client.post.multi(params, userConf);
+							callbackTransferred(asset, amount, unit);
+						} catch (e){
+							return callbackCompleted(e);
+						}
+						await wait500ms();
+					}
+				}
+			}
+		}
+	callbackCompleted();
+	client.close();
+}
+
+async function issueAssets(arrFixtures, amount, callbackCompleted){
+
+	let definitions = [];
+	let outputs = [];
 
 	arrFixtures.forEach((fixture)=>{
 		let parameterized_aa = [
@@ -31,29 +85,33 @@ async function issueAssets(arrFixtures, amount){
 			}
 		}];
 		let aa_address = getChash160(parameterized_aa)
-		let payload = {address: aa_address, definition: parameterized_aa};
 		outputs.push({address: aa_address, amount});
-		additionalMessages.push({
-			app: 'definition',
-			payload_hash: getBase64Hash(payload, true),
-			payload_location: 'inline',
-			payload: payload,
-		});
+		definitions.push({address: aa_address, definition: parameterized_aa});
 	});
 
-	const params = {
-		outputs,
-		additionalMessages
-	};
+	const params = [
+		{
+			app: 'payment',
+			payload:{
+				outputs
+			}
+		}];
+		definitions.forEach((definition)=>{
+			params.push({
+				app: 'definition',
+				payload: definition
+			});
+		});
+
 	const client = new obyte.Client(userConf.hub_ws_url, userConf);
-	try{
-		await client.post.payment(params, userConf);
+	try {
+		var unit = await client.post.multi(params, userConf);
 	} catch(e){
 		client.close();
-		return e.toString();
+		callbackCompleted(e.toString());
 	} 
 	client.close();
-	return null;
+	return callbackCompleted(null, unit);
 }
 
 
@@ -62,18 +120,28 @@ function initStore(_store){
 }
 
 
-async function getBalances(){
+async function refreshBalances(){
+	await Promise.all([refreshWalletBalances(), refreshOdexBalances()]);
+}
+
+async function refreshWalletBalances(){
 	const wallet_balances =  await odex.account.getBalance();
 	store.commit("setWalletBalances", wallet_balances);
+}
+
+async function refreshOdexBalances(){
 	const odex_balances =  await odex.rest_api.getBalances(odex.account.getOwnerAddress());
 	store.commit("setOdexBalances", odex_balances);
 }
 
+
+
 async function start(_userConf){
 
-	if (store.state.isRunning){
+	if (store.state.isConnected){
 		return 'already started';
 	}
+	store.commit("setConnectingStatus", true);
 
 	userConf = _userConf;
 	try {
@@ -87,20 +155,22 @@ async function start(_userConf){
 		return "Coudln't start Odex client: " + e.toString();
 	}
 
-	store.commit("setRunningStatus", true);
-	getBalances()
+	store.commit("setConnectedStatus", true);
+	store.commit("setConnectingStatus", false);
+
+	refreshBalances()
 	return null;
 }
 
 async function stop(){
 	await odex.stop();
-	store.commit("setRunningStatus", false);
+	store.commit("setConnectedStatus", false);
 }
 
 
-exports.initEvents = initEvents;
 exports.initStore = initStore;
 exports.start = start;
 exports.stop = stop;
-exports.getBalances = getBalances;
+exports.refreshBalances = refreshBalances;
 exports.issueAssets = issueAssets;
+exports.transferToOdex = transferToOdex;

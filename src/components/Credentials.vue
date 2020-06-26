@@ -38,7 +38,7 @@ export default {
 	},
 	computed: {
 		is_editing_allowed(){
-			return !this.$store.state.isRunning;
+			return !this.$store.state.isConnected;
 		}
 	},
 	created() {

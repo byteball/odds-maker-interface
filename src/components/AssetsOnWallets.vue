@@ -1,13 +1,20 @@
 <template>
 	<div>
-		{{home_asset}} {{draw_asset}} {{away_asset}} {{canceled_asset}}
+		<b-icon icon="wallet" class="mr-05"/>
+		<asset-or-byte-amount :amount="home_asset" class="mr-05"/>
+		<asset-or-byte-amount :amount="draw_asset" class="mr-05"/>
+		<asset-or-byte-amount :amount="away_asset" class="mr-05"/>
+		<asset-or-byte-amount :amount="canceled_asset" class="mr-05"/>
 	</div>
 </template>
 <script>
 
+import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
+
+
 export default {
 	components:{
-
+		AssetOrByteAmount
 	},
   props: {
 		assets: Object

@@ -1,8 +1,6 @@
 <template>
   <div id="app">
 			<status />
-			<b-button v-if="isRunning" @click="disconnect">Disconnect</b-button>
-			<b-button v-else @click="connect">Connect</b-button>
 			<b-tabs>
 				<b-tab-item label="Fixtures">
 					<main-table />
@@ -21,6 +19,7 @@ import Status from './components/Status.vue'
 
 import core from './js/core.js'
 //import { EventBus } from './js/event-bus.js';
+import Vue from 'vue';
 
 export default {
   name: 'App',
@@ -31,26 +30,28 @@ export default {
 	},
 	data() {
 		return {
-	//		isRunning: false
+	//		isConnected: false
 		}
 	},
-		computed: {
-			isRunning: function(){
-				return this.$store.state.isRunning
-			}
-	},
 	created(){
-		core.initStore(this.$store)
-		/*core.initEvents(EventBus);
-		EventBus.$on('connected', ()=>{
-			this.isRunning = true;
-		});
-		EventBus.$on('disconnected', ()=>{
-			this.isRunning = false;
-		});*/
-	},
-	methods:{
-		connect: async function(){
+		core.initStore(this.$store);
+
+		Vue.nextTick(async ()=> {
+			if (!this.$store.state.connections.bComplete)
+				return this.$buefy.toast.open({
+						duration: 5000,
+						message: "Connections settings not complete",
+						position: 'is-bottom',
+						type: 'is-danger'
+				})
+			if (!this.$store.state.credentials.bComplete)
+				return this.$buefy.toast.open({
+						duration: 5000,
+						message: "Credentials settings not complete",
+						position: 'is-bottom',
+						type: 'is-danger'
+				})
+
 			const err = await core.start(Object.assign(
 				this.$store.state.connections,
 				this.$store.state.credentials,
@@ -62,13 +63,10 @@ export default {
 					position: 'is-bottom',
 					type: 'is-danger'
 				})
-		//	EventBus.$emit('connect');
-		},
-		disconnect: function(){
-						core.stop();
+		})
+	},
+	methods:{
 
-		//	EventBus.$emit('disconnect');
-		}
 	}
 }
 </script>

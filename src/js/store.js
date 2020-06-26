@@ -11,7 +11,9 @@ export default new Vuex.Store({
 		wallet_balances: {},
 		odex_balances: {},
 		wallet_address: false,
-		isRunning: false,
+		isConnected: false,
+		isConnecting : false,
+		newOdds: {}
 	},
 	mutations: {
 		setConnections(state, data){
@@ -20,8 +22,11 @@ export default new Vuex.Store({
 		setCredentials(state, data){
 			state.credentials = data;
 		},
-		setRunningStatus(state, data){
-			state.isRunning = data;
+		setConnectedStatus(state, data){
+			state.isConnected = data;
+		},
+		setConnectingStatus(state, data){
+			state.isConnecting = data;
 		},
 		setWalletAddress(state, data){
 			state.wallet_address = data;
@@ -31,6 +36,9 @@ export default new Vuex.Store({
 		},
 		setOdexBalances(state, data){
 			state.odex_balances = data;
+		},
+		setNewOdds(state, data){
+			Vue.set(state.newOdds, data.feedName, data.odds)
 		},
 	},
 	actions: {
