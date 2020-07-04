@@ -45,6 +45,9 @@ import TheOddsApi from './oddsProvider/TheOddsApi.vue'
 		},
 		methods: {
 
+
+			
+
 		},
 	}
 </script>

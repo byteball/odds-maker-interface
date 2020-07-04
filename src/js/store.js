@@ -13,6 +13,7 @@ export default new Vuex.Store({
 		wallet_address: false,
 		isConnected: false,
 		isConnecting : false,
+		myOdexOddsByAsset : {},
 		newOdds: {}
 	},
 	mutations: {
@@ -40,6 +41,12 @@ export default new Vuex.Store({
 		setNewOdds(state, data){
 			Vue.set(state.newOdds, data.feedName, data.odds)
 		},
+		setMyOdexOddsByAsset(state, data){
+			Vue.set(state.myOdexOddsByAsset, data.asset, data.odds)
+		},
+		deleteMyOdexOddsByAsset(state, asset){
+			Vue.delete(state.myOdexOddsByAsset, asset)
+		}
 	},
 	actions: {
   },

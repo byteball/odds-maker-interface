@@ -32,6 +32,7 @@
 const conf = require('../js/conf.js')
 import core from '../js/core.js'
 import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
+const issuing_fees = 10000;
 
 	export default {
 		components:{
@@ -58,7 +59,7 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 
 			},
 			total_amount: function(){
-				return this.amount * this.fixtures.length * conf.gb_to_bytes
+				return this.amount * this.fixtures.length * conf.gb_to_bytes + issuing_fees * this.fixtures.length
 			},
 			available_amount: function(){
 				if (!this.$store.state.wallet_balances.base)
@@ -67,7 +68,7 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 			}
 		},
 		created(){
-			if (this.fixtures.length >60){
+			if (this.fixtures.length > 60){
 				this.popToast("Can't issue asset for more than 60 fixtures at once");
 				this.$parent.close()
 			}
@@ -79,7 +80,7 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 		methods: {
 			issueAssets: async function(){
 			this.isIssuing = true;
-			const err = await core.issueAssets(this.fixtures, Math.floor(this.amount*conf.gb_to_bytes), this.callbackCompleted);
+			const err = await core.issueAssets(this.fixtures, Math.floor(this.amount*conf.gb_to_bytes) + issuing_fees, this.callbackCompleted);
 			if (err)
 				this.popToast(err);
 			this.isIssuing = false;

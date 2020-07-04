@@ -1,9 +1,12 @@
 <template>
 <div>
-<b-button @click="issueAsset">Issue asset</b-button>
-<b-button @click="transferToOdex">Transfer to Odex</b-button>
-<b-button @click="prefillNewOdds">Prefill new odds</b-button>
-
+	<div class="buttons">
+		<span class="title is-6 mr-05 mt-05">For selection: </span>
+		<b-button @click="issueAsset" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Issue asset</b-button>
+		<b-button @click="transferToOdex" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Transfer to Odex</b-button>
+		<b-button @click="prefillNewOdds" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Prefill new odds</b-button>
+		<b-button @click="setOdexOddsForFixtures" :disabled="!checkedRows.length" class="is-pulled-left is-primary">set odds</b-button>
+	</div>
 	<b-table 
 	:data="fixtures"
 	:checked-rows.sync="checkedRows"	
@@ -32,29 +35,8 @@
 			</b-table-column>
 
 			<b-table-column label="Odds"  field="odds" custom-key='odds' >
-				{{props.row.feedName}}
-				<div v-if="$store.state.newOdds[props.row.feedName]" class="columns">
-					<div class="column is-3">
-						<b-field label='home'>
-							<b-numberinput  v-model="$store.state.newOdds[props.row.feedName][0]" :step="0.01"></b-numberinput>
-						</b-field>
-					</div>
-					<div class="column is-3">
-						<b-field label='draw'>
-							<b-numberinput v-model="$store.state.newOdds[props.row.feedName][1]" :step="0.01"></b-numberinput>
-						</b-field>
-					</div>
-					<div class="column is-3">
-						<b-field label='away'>
-							<b-numberinput v-model="$store.state.newOdds[props.row.feedName][2]" :step="0.01"></b-numberinput>
-						</b-field>
-					</div>
-					<div class="column is-3">
-						<b-field label='canceled'>
-							<b-numberinput  v-model="$store.state.newOdds[props.row.feedName][3]" :step="0.01"></b-numberinput>
-						</b-field>
-					</div>
-				</div>
+				<my-odds :fixture="props.row" />
+				<new-odds :fixture="props.row" />
 			</b-table-column>
 
 		</template>
@@ -70,16 +52,24 @@ import AssetsOnOdex from './AssetsOnOdex.vue'
 import TransferToOdexModal from './TransferToOdexModal.vue'
 import IssueAssetsModal from './IssueAssetsModal.vue'
 import PrefillNewOdds from './PrefillNewOdds.vue'
+import NewOdds from './MainTableNewOdds.vue'
+import MyOdds from './MainTableMyOdds.vue'
+
+import core from '../js/core.js'
 
 import { ModalProgrammatic } from 'buefy'
+const moment = require('moment');
+const conf = require('../js/conf.js');
 
 export default {
 	components: {
 		AssetsOnWallets,
 		AssetsOnOdex,
+		NewOdds,
+		MyOdds,
 	},
   props: {
-    msg: String
+
 	},
 	data() {
 		return {
@@ -90,8 +80,17 @@ export default {
 	},
 	created(){
 		this.axios.get('/api/fixtures').then((response) => {
-			console.log(response.data);
-			response.data.forEach((fixture)=>{
+
+			const upcomingFixtures = response.data.filter((fixture)=>{
+				return moment(fixture.date).isAfter(moment()) && moment(fixture.date).isBefore(moment().add(conf.upcoming_fixtures_max_days, 'days'))
+			}).sort((a,b)=>{
+				if(a.date > b.date)
+					return 1;
+				else
+					return -1;
+			});
+
+			upcomingFixtures.forEach((fixture)=>{
 				fixture.feedName = this.getFeedName(fixture);
 				if (fixture.assets){
 					fixture.assets.home_symbol = fixture.feedName + '-' + fixture.feedHomeTeamName;
@@ -100,17 +99,10 @@ export default {
 					fixture.assets.canceled_symbol = fixture.feedName + '-CANCELED';
 				}
 				if (!this.$store.state.newOdds[fixture.feedName])
-					this.$store.commit('setNewOdds', {feedName: fixture.feedName, odds:[1,1,1,1]});
+					this.$store.commit('setNewOdds', {feedName: fixture.feedName, odds:{home:1,draw:1, away:1, canceled: 1}});
 			});
 
-			this.fixtures = response.data.sort((a,b)=>{
-				if(a.date > b.date){
-					return 1;
-				}
-				else{
-					return -1;
-				}
-			});
+			this.fixtures = upcomingFixtures;
 		})
 
 	},
@@ -122,32 +114,32 @@ export default {
 		getFeedName: function(fixture){
 			return fixture.championship + '_'  + fixture.feedHomeTeamName + '_' + fixture.feedAwayTeamName + '_' + fixture.localDay;
 		},
-		issueAsset: async function(){
-				ModalProgrammatic.open({
-					parent: this,
-					component: IssueAssetsModal,
-					hasModalCard: true,
-					props: { fixtures: this.checkedRows },
-				})
+		issueAsset: function(){
+			ModalProgrammatic.open({
+				parent: this,
+				component: IssueAssetsModal,
+				hasModalCard: true,
+				props: { fixtures: this.checkedRows },
+			})
 		},
-		transferToOdex: async function(){
-				ModalProgrammatic.open({
-					parent: this,
-					component: TransferToOdexModal,
-					hasModalCard: true,
-					props: { fixtures: this.checkedRows },
-				})
+		transferToOdex: function(){
+			ModalProgrammatic.open({
+				parent: this,
+				component: TransferToOdexModal,
+				hasModalCard: true,
+				props: { fixtures: this.checkedRows },
+			})
 		},
-		prefillNewOdds: async function(){
-				ModalProgrammatic.open({
-					parent: this,
-					component: PrefillNewOdds,
-					hasModalCard: true
-				})
+		prefillNewOdds: function(){
+			ModalProgrammatic.open({
+				parent: this,
+				component: PrefillNewOdds,
+				hasModalCard: true
+			})
 		},
-
-		
-	
+		setOdexOddsForFixtures: function(){
+			core.setOdexOdds(this.checkedRows);
+		}
 	}
 }
 </script>

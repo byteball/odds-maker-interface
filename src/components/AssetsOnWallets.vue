@@ -27,13 +27,13 @@ export default {
 	computed: {
 		home_asset: function(){
 			if (this.assets){
-				return this.sumBalances(this.$store.state.wallet_balances[this.assets.hometeam])
+				return this.sumBalances(this.$store.state.wallet_balances[this.assets.home])
 			} else
 				return 0;
 		},
 		away_asset: function(){
 			if (this.assets){
-				return this.sumBalances(this.$store.state.wallet_balances[this.assets.awayteam])
+				return this.sumBalances(this.$store.state.wallet_balances[this.assets.away])
 			} else
 				return 0;
 		},

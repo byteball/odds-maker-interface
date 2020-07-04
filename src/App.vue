@@ -36,7 +36,7 @@ export default {
 	created(){
 		core.initStore(this.$store);
 
-		Vue.nextTick(async ()=> {
+		Vue.nextTick(async ()=> { // we wait next tick for the state variables to be loaded
 			if (!this.$store.state.connections.bComplete)
 				return this.$buefy.toast.open({
 						duration: 5000,

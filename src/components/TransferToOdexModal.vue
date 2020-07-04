@@ -11,15 +11,15 @@
 				<div v-for="fixture in fixtures" class="row" :key="fixture.feedName">
 					<div v-if="fixture.assets">
 						<div>{{ fixture.assets.home_symbol }}
-							<span v-if="assocTransferred[fixture.assets.hometeam]"> - transferred: 
-								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.hometeam].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.hometeam].unit" target="_blank"><b-icon icon="open-in-new" /></a>
+							<span v-if="assocTransferred[fixture.assets.home]"> - transferred: 
+								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.home].amount"/> 
+								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.home].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 							</span>
 						</div>
 						<div>{{ fixture.assets.away_symbol }}
-							<span v-if="assocTransferred[fixture.assets.awayteam]"> - transferred:
-								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.awayteam].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.awayteam].unit" target="_blank"><b-icon icon="open-in-new" /></a>
+							<span v-if="assocTransferred[fixture.assets.away]"> - transferred:
+								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.away].amount"/> 
+								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.away].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 								</span>
 						</div>
 						<div>{{ fixture.assets.draw_symbol }}

@@ -170,7 +170,17 @@ export default {
 			if (count_odds_2 > 0)
 				odds_2 = odds_2 / count_odds_2;
 			console.log(feedName);
-			this.$store.commit('setNewOdds', {feedName, odds: [Math.round(odds_1,2), Math.round(odds_x,2), Math.round(odds_2,2), 50] });
+//{home:1,draw:1, away:1, canceled: 1}
+
+			this.$store.commit('setNewOdds', {
+				feedName, 
+				odds: {
+					home: Number(odds_1.toFixed(2)), 
+					draw: Number(odds_x.toFixed(2)), 
+					away: Number(odds_2.toFixed(2)), 
+					canceled: 50
+				}
+			});
 		}
 	}
 }
