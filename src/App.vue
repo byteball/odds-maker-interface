@@ -2,8 +2,11 @@
   <div id="app">
 			<status />
 			<b-tabs>
-				<b-tab-item label="Fixtures">
-					<main-table />
+				<b-tab-item label="Upcoming fixtures">
+					<upcoming-fixtures-table :fixtures="upcomingFixtures" />
+				</b-tab-item>
+				<b-tab-item label="Finished fixtures">
+					<finished-fixtures-table :fixtures="finishedFixtures" />
 				</b-tab-item>
 				<b-tab-item label="Settings">
 					<settings />
@@ -13,9 +16,13 @@
 </template>
 
 <script>
-import MainTable from './components/MainTable.vue'
+import UpcomingFixturesTable from './components/UpcomingFixturesTable.vue'
+import FinishedFixturesTable from './components/FinishedFixturesTable.vue'
 import Settings from './components/Settings.vue'
 import Status from './components/Status.vue'
+import moment from 'moment';
+
+import conf from './js/conf.js';
 
 import core from './js/core.js'
 //import { EventBus } from './js/event-bus.js';
@@ -24,12 +31,15 @@ import Vue from 'vue';
 export default {
   name: 'App',
   components: {
-		MainTable,
+		UpcomingFixturesTable,
+		FinishedFixturesTable,
 		Settings,
-		Status
+		Status,
 	},
 	data() {
 		return {
+			upcomingFixtures: [],
+			finishedFixtures: [],
 	//		isConnected: false
 		}
 	},
@@ -64,8 +74,54 @@ export default {
 					type: 'is-danger'
 				})
 		})
+		this.getFixtures();
+		setInterval(this.getFixtures, 2*60*1000);
 	},
 	methods:{
+
+		getFixtures: function(){
+			this.axios.get('/api/fixtures').then((response) => {
+				const allFixtures = response.data;
+				allFixtures.forEach((fixture)=>{
+					fixture.feedName = this.getFeedName(fixture);
+					if (fixture.assets){
+						fixture.assets.home_symbol = fixture.feedName + '-' + fixture.feedHomeTeamName;
+						fixture.assets.away_symbol = fixture.feedName + '-' + fixture.feedAwayTeamName;
+						fixture.assets.draw_symbol = fixture.feedName + '-DRAW';
+						fixture.assets.canceled_symbol = fixture.feedName + '-CANCELED';
+					}
+					fixture.dateMoment = moment(fixture.date);
+					if (!this.$store.state.newOdds[fixture.feedName])
+						this.$store.commit('setNewOdds', {feedName: fixture.feedName, odds:{home:1,draw:1, away:1, canceled: 1}});
+				});
+
+				allFixtures.sort((a,b)=>{
+					if(a.date > b.date)
+						return 1;
+					else
+						return -1;
+				});
+
+				this.upcomingFixtures = allFixtures.filter((fixture)=>{
+					return fixture.dateMoment.isAfter(moment()) && fixture.dateMoment.isBefore(moment().add(conf.upcoming_fixtures_max_days, 'days'))
+				});
+
+				allFixtures.sort((a,b)=>{
+					if(a.date < b.date)
+						return 1;
+					else
+						return -1;
+				});
+
+				this.finishedFixtures = allFixtures.filter((fixture)=>{
+					return fixture.dateMoment.isBefore(moment())
+				});
+		
+			})
+		},
+		getFeedName: function(fixture){
+			return fixture.championship + '_'  + fixture.feedHomeTeamName + '_' + fixture.feedAwayTeamName + '_' + fixture.localDay;
+		},
 
 	}
 }

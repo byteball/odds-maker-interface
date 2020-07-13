@@ -2,7 +2,7 @@ module.exports = {
 	devServer: {
 		proxy: {
 			"^/api" : { 
-				target: process.env.local_server ? 'http://127.0.0.1:1860/' : '/'
+				target: process.env.local_server ? 'http://127.0.0.1:1860/' : 'https://betting.papabyte.com/'
 			}
 		}
 		

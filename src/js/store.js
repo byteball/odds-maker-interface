@@ -8,6 +8,7 @@ export default new Vuex.Store({
 	state: {
 		connections: {},
 		credentials: {},
+		odds_configuration: {},
 		wallet_balances: {},
 		odex_balances: {},
 		wallet_address: false,
@@ -22,6 +23,9 @@ export default new Vuex.Store({
 		},
 		setCredentials(state, data){
 			state.credentials = data;
+		},
+		setOddsConfiguration(state, data){
+			state.odds_configuration = data;
 		},
 		setConnectedStatus(state, data){
 			state.isConnected = data;

@@ -3,6 +3,7 @@ const obyte = require('obyte');
 const conf = require('./conf.js');
 const axios = require('axios');
 const { getChash160 } = require('obyte/lib/utils');
+const moment = require('moment');
 
 var store,orders,userConf;
 var assocOrdersByAsset = {};
@@ -46,6 +47,86 @@ async function transferToOdex(arrFixtures, callbackTransferred, callbackComplete
 							const unit = await client.post.multi(params, userConf);
 							callbackTransferred(asset, amount, unit);
 						} catch (e){
+							await refreshWalletBalances();
+							return callbackCompleted(e);
+						}
+					}
+				}
+			}
+		}
+	await refreshWalletBalances();
+	callbackCompleted();
+	client.close();
+}
+/*		home_asset: function(){
+			return this.$store.state.odex_balances[this.feedName+ '-' + this.fixture.feedHomeTeamName] || 0;
+		},
+		away_asset: function(){
+			return this.$store.state.odex_balances[this.feedName+ '-' + this.fixture.feedAwayTeamName] || 0;
+		},
+		draw_asset: function(){
+			return this.$store.state.odex_balances[this.feedName+ '-DRAW'] || 0;
+
+		},
+		canceled_asset: function(){
+			return this.$store.state.odex_balances[this.feedName+ '-CANCELED'] || 0;
+		},*/
+		
+async function redeemWinningAsset(arrFixtures, callbackTransferred, callbackCompleted){
+	await refreshWalletBalances();
+	const client = new obyte.Client(userConf.hub_ws_url, userConf);
+		for (var i=0; i<arrFixtures.length; i++){
+			const fixture = arrFixtures[i];
+			if (fixture.assets){
+					if (fixture.assets && fixture.result){
+						//SA_BGN_SAS_2020-07-08
+						var asset;
+						if (fixture.result === fixture.feedName.split('_')[1]){
+							asset = fixture.assets.home;
+						}
+						else if (fixture.result === fixture.feedName.split('_')[2]){
+							asset = fixture.assets.away;
+						}
+						else if (fixture.result === 'draw'){
+							asset = fixture.assets.draw;
+						}
+						else if (fixture.result === 'canceled'){
+							asset = fixture.assets.canceled;
+						}
+
+					if (store.state.wallet_balances[asset]){
+						const amount = store.state.wallet_balances[asset].stable;
+						let definition = getParameterizedDefinition(fixture);
+						let address = getChash160(definition);
+						if (amount === 0){
+							callbackTransferred(asset, 0);
+							continue;
+						}
+						const params = [
+						{
+							app: 'payment',
+							payload:{
+								asset: asset,
+								outputs: [{
+									amount: amount,
+									address: address
+								}]
+							}
+						},
+						{
+							app: 'payment',
+							payload:{
+								outputs: [{
+									amount: 10000,
+									address: address
+								}]
+							}
+						}];
+						console.log(params);
+						try {
+							const unit = await client.post.multi(params, userConf);
+							callbackTransferred(asset, amount, unit);
+						} catch (e){
 							return callbackCompleted(e);
 						}
 					}
@@ -56,27 +137,96 @@ async function transferToOdex(arrFixtures, callbackTransferred, callbackComplete
 	client.close();
 }
 
+
+async function transferToWallet(arrFixtures, callbackRequested, callbackCompleted){
+	await refreshOdexBalances();
+	const client = new obyte.Client(userConf.hub_ws_url, userConf);
+		for (var i=0; i<arrFixtures.length; i++){
+			const fixture = arrFixtures[i];
+			if (fixture.assets && fixture.result){
+				//SA_BGN_SAS_2020-07-08
+				var asset, symbol;
+				if (fixture.result === fixture.feedName.split('_')[1]){
+					asset = fixture.assets.home;
+					symbol = fixture.feedName + '-' + fixture.feedHomeTeamName;
+				}
+				else if (fixture.result === fixture.feedName.split('_')[2]){
+					asset = fixture.assets.away;
+					symbol = fixture.feedName + '-' + fixture.feedAwayTeamName;
+				}
+				else if (fixture.result === 'draw'){
+					asset = fixture.assets.draw;
+					symbol = fixture.feedName + '-draw';
+				}
+				else if (fixture.result === 'canceled'){
+					asset = fixture.assets.canceled;
+					symbol = fixture.feedName + '-canceled';
+				}
+				console.log(symbol);
+				console.log(store.state.odex_balances);
+				if (store.state.odex_balances[symbol]){
+					const amount = store.state.odex_balances[symbol];
+					if (amount === 0){
+						callbackRequested(asset, 0);
+						continue;
+					}
+					const params = [
+					{
+						app: 'data',
+						payload:{
+							asset: asset,
+							withdraw: 1,
+							amount
+						}
+					},
+					{
+						app: 'payment',
+						payload:{
+							outputs: [{
+								amount: 10000,
+								address: conf.odex_aa_address
+							}]
+						}
+					}];
+					console.log(params);
+					try {
+						const unit = await client.post.multi(params, userConf);
+						callbackRequested(asset, amount, unit);
+					} catch (e){
+						return callbackCompleted(e);
+					}
+				}
+			}
+		}
+	callbackCompleted();
+	client.close();
+}
+
+function getParameterizedDefinition(objFixture){
+	return [
+		"autonomous agent",
+		{
+		base_aa: conf.issuer_base_aa,
+		params: {
+			oracle: conf.oracle_address,
+			home_team: objFixture.feedHomeTeamName,
+			away_team: objFixture.feedAwayTeamName, 
+			championship: objFixture.championship, 
+			expiry_date: objFixture.localDay
+		}
+	}];
+}
+
 async function issueAssets(arrFixtures, amount, callbackCompleted){
 
 	let definitions = [];
 	let outputs = [];
 
 	arrFixtures.forEach((fixture)=>{
-		let parameterized_aa = [
-			"autonomous agent",
-			{
-			base_aa: conf.issuer_base_aa,
-			params: {
-				oracle: conf.oracle_address,
-				home_team: fixture.feedHomeTeamName,
-				away_team: fixture.feedAwayTeamName, 
-				championship: fixture.championship, 
-				expiry_date: fixture.localDay
-			}
-		}];
-		let aa_address = getChash160(parameterized_aa)
-		outputs.push({address: aa_address, amount});
-		definitions.push({address: aa_address, definition: parameterized_aa});
+		let definition = getParameterizedDefinition(fixture);
+		let address = getChash160(definition);
+		outputs.push({address, amount});
+		definitions.push({address, definition});
 	});
 
 	const params = [
@@ -182,7 +332,6 @@ async function start(_userConf){
 	initMyOdexOrders();
 	console.log(orders.assocMyOrders);
 	odex.ws_api.on('reset_orders', initMyOdexOrders);
-	myOdexOrderAdded
 	odex.ws_api.on('my_order_added', myOdexOrderAdded);
 	odex.ws_api.on('my_order_removed', myOdexOrderRemoved);
 
@@ -191,6 +340,7 @@ async function start(_userConf){
 	store.commit("setConnectingStatus", false);
 
 	refreshBalances()
+	setInterval(refreshBalances, 3*60*1000);
 	return null;
 }
 
@@ -221,21 +371,34 @@ async function setOdexOdds(fixtures){
 	async function setOddsForAsset(fixture, type){
 
 		if (assocOrdersByAsset[fixture.assets[type]]){
-			console.log('will cancel order');
 			await orders.createAndSendCancel(assocOrdersByAsset[fixture.assets[type]]);
 		} else {
 			try {
-			await axios.post(store.state.connections.odex_http_url + '/api/pairs/create', {
+			await axios.post(store.state.connections.odex_http_url + '/pairs/create', {
 				asset: fixture.assets[type]
 			})
 			} catch(e){
 				console.log(e);
 			}
+			await odex.exchange.refreshTokensList();
 		}
+		if (type === 'draw' && !store.state.odds_configuration.with_draw_championships[fixture.championship])
+			return console.log("will not set draw odds");
+		if (type === 'canceled' && !store.state.odds_configuration.with_cancel_championships[fixture.championship])
+			return console.log("will not set cancel odds");
 		const symbol = fixture.assets[type +'_symbol'];
 		const balance = store.state.odex_balances[symbol] / (10 ** conf.asset_decimals);
 		if (balance > 0){
-			let hash = await orders.createAndSendOrder(symbol + '/GBYTE', 'SELL', balance, 1 / store.state.newOdds[fixture.feedName][type]);
+			console.log(type +'  '+ store.state.newOdds[fixture.feedName][type])
+			let expiry_set_moment = moment().add(store.state.odds_configuration.odds_expiration_in_hours, 'hours');
+			let hash = await orders.createAndSendOrder(
+				symbol + '/GBYTE',
+				'SELL', 
+				balance, 
+				1 / store.state.newOdds[fixture.feedName][type], 
+				null, 
+				expiry_set_moment.isAfter(fixture.dateMoment) || store.state.odds_configuration.odds_expiration_in_hours === 0 ? fixture.dateMoment.unix() : expiry_set_moment.unix()
+			);
 			assocOrdersByAsset[fixture.assets[type]] = hash;
 		}
 	}
@@ -259,5 +422,7 @@ exports.stop = stop;
 exports.refreshBalances = refreshBalances;
 exports.issueAssets = issueAssets;
 exports.transferToOdex = transferToOdex;
+exports.transferToWallet = transferToWallet;
 exports.setOdexOdds = setOdexOdds;
 exports.cancelOdexOddsForFixture = cancelOdexOddsForFixture;
+exports.redeemWinningAsset = redeemWinningAsset;

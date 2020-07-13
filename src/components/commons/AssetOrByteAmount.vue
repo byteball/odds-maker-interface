@@ -1,7 +1,7 @@
 <template>
 	<span>
 		<span v-if="label"> {{label}}</span>
-		<span >{{amount/gb_to_bytes >=1 ? ((amount/gb_to_bytes).toPrecision(6)/1).toLocaleString(): ((amount/gb_to_bytes).toPrecision(6)/1)}}</span>
+		<span>{{amount/gb_to_bytes >=1 ? ((amount/gb_to_bytes).toPrecision(6)/1).toLocaleString(): ((amount/gb_to_bytes).toPrecision(6)/1)}}</span>
 	</span>
 </template>
 

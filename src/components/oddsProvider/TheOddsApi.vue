@@ -35,6 +35,9 @@
 				</b-select>
 			</b-field>
 			</div>
+			<b-field label='Canceled odds'>
+				<b-numberinput  v-model="canceled_odds" :step="0.01" :controls="false" size="is-small" ></b-numberinput>
+			</b-field>
 			<b-button class="is-primary" @click="downloadOdds">Get odds</b-button>
 	</div>
 </template>
@@ -59,6 +62,8 @@ export default {
 			regions: ['au', 'eu', 'uk', 'us'],
 			selected_region: '',
 			selected_championship: '',
+			markup: 0,
+			canceled_odds: this.$store.state.odds_configuration.default_canceled_odds,
 			newOdds: {}
 		}
 	},
@@ -93,9 +98,6 @@ export default {
 			this.$store.commit("setCredentials", this.credentials)
 		},
 		downloadOdds(){
-			console.log(this.selected_region);
-						console.log(this.selected_championship);
-
 			this.axios.get("https://api.the-odds-api.com/v3/odds/?apiKey="+this.the_odds_api_key+"&sport=" 
 			+ teamToFeed[this.selected_championship].key + "&region=" + this.selected_region)
 			.then((response) => {
@@ -103,13 +105,11 @@ export default {
 					response.data.data.forEach((event)=>{
 						this.prefillNewOddsForEvent(event);
 					});
-				console.log(this.$store.state.newOdds);
-
 				}
 			});
 		},
 		prefillNewOddsForEvent(event){
-			console.log(event);
+
 			var day = moment.unix(Number(event.commence_time)).format("YYYY-MM-DD");
 
 			var odds_1 = 0;
@@ -169,8 +169,6 @@ export default {
 				odds_x = odds_x / count_odds_x;
 			if (count_odds_2 > 0)
 				odds_2 = odds_2 / count_odds_2;
-			console.log(feedName);
-//{home:1,draw:1, away:1, canceled: 1}
 
 			this.$store.commit('setNewOdds', {
 				feedName, 
