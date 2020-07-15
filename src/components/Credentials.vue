@@ -5,7 +5,7 @@
 			<b-field :message="wif_message">
 				<template slot="label">
 					wif
-					<b-tooltip type="is-dark" label="Private key for your control address, can be generated on https://bonustrack.github.io/obyte-paperwallet/">
+					<b-tooltip type="is-dark" label="Private key for your web wallet, can be generated on https://bonustrack.github.io/obyte-paperwallet/">
 					<b-icon size="is-small" icon="help-circle-outline"></b-icon>
 					</b-tooltip>
 				</template>

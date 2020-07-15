@@ -6,7 +6,6 @@
 			<b-button @click="redeemWinningAsset" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Redeem winning assets from wallet</b-button>
 
 		</div>
-		{{checkedRows}}
 		<b-table 
 		:data="fixtures"
 		:checked-rows.sync="checkedRows"	
@@ -37,6 +36,7 @@
 				<b-table-column label="Assets"  field="on_wallet" custom-key='on_wallet' >
 					<assets-on-wallets :fixture="props.row" />
 					<assets-on-odex :fixture="props.row" />
+					<fixture-action :fixture="props.row" />
 				</b-table-column>
 
 			</template>
@@ -50,6 +50,8 @@
 import AssetsOnWallets from './AssetsOnWallets.vue'
 import AssetsOnOdex from './AssetsOnOdex.vue'
 import TransferToWalletModal from './TransferToWalletModal.vue'
+import FixtureAction from './FinishedFixtureAction.vue'
+
 import RedeemAssetModal from './RedeemAssetModal.vue'
 import moment from 'moment';
 
@@ -62,6 +64,7 @@ export default {
 	components: {
 		AssetsOnWallets,
 		AssetsOnOdex,
+		FixtureAction
 	},
   props: {
 		fixtures: Array
@@ -71,6 +74,11 @@ export default {
 			checkedRows: [],
 			moment
 		}
+	},
+	computed: {
+
+
+
 	},
 	created(){
 	

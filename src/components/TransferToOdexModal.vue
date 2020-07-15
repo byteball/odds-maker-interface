@@ -7,7 +7,7 @@
 		<section class="modal-card-body">
 
 			<div class="container">
-				<span class="mr-05">Transferring asset to Odex </span>
+				<span class="mr-05">Transferring assets to Odex </span>
 				<div v-for="fixture in fixtures" class="row" :key="fixture.feedName">
 					<div v-if="fixture.assets">
 						<div>{{ fixture.assets.home_symbol }}
@@ -37,7 +37,8 @@
 					</div>
 				</div>
 				<div v-if="isTransferCompleted" class="mt-1">
-					<span class="mr-05">All transfers completed, balances on Odex will appear once transactions are confirmed</span><b-icon icon="thumb-up" />
+					<span class="mr-05">All transfers completed</span><b-icon icon="thumb-up" />
+					<div>Balances on Odex will appear once transactions are confirmed</div>
 				</div>
 				<div v-else class="mt-1">
 					<b-progress></b-progress>

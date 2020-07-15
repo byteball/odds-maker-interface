@@ -1,6 +1,8 @@
 <template>
-  <div id="app">
+	<div id="app">
+			<p class="title is-3 p-1">Odds maker interface</p>
 			<status />
+
 			<b-tabs>
 				<b-tab-item label="Upcoming fixtures">
 					<upcoming-fixtures-table :fixtures="upcomingFixtures" />
@@ -12,6 +14,7 @@
 					<settings />
 				</b-tab-item>
 			</b-tabs>
+
   </div>
 </template>
 
@@ -21,11 +24,9 @@ import FinishedFixturesTable from './components/FinishedFixturesTable.vue'
 import Settings from './components/Settings.vue'
 import Status from './components/Status.vue'
 import moment from 'moment';
-
 import conf from './js/conf.js';
 
 import core from './js/core.js'
-//import { EventBus } from './js/event-bus.js';
 import Vue from 'vue';
 
 export default {
@@ -89,10 +90,30 @@ export default {
 						fixture.assets.away_symbol = fixture.feedName + '-' + fixture.feedAwayTeamName;
 						fixture.assets.draw_symbol = fixture.feedName + '-DRAW';
 						fixture.assets.canceled_symbol = fixture.feedName + '-CANCELED';
+
+						if (fixture.result){
+							if (fixture.result === fixture.feedName.split('_')[1]){
+								fixture.winning_asset = fixture.assets.home;
+								fixture.winning_symbol = fixture.assets.home_symbol;
+							}
+							else if (fixture.result === fixture.feedName.split('_')[2]){
+								fixture.winning_asset = fixture.assets.away;
+								fixture.winning_symbol = fixture.assets.away_symbol;
+							}
+							else if (fixture.result === 'draw'){
+								fixture.winning_asset = fixture.assets.draw;
+								fixture.winning_symbol = fixture.assets.draw_symbol;
+							}
+							else if (fixture.result === 'canceled'){
+								fixture.winning_asset = fixture.assets.canceled;
+								fixture.winning_symbol = fixture.assets.canceled_symbol;
+							}
+						}
+
 					}
 					fixture.dateMoment = moment(fixture.date);
 					if (!this.$store.state.newOdds[fixture.feedName])
-						this.$store.commit('setNewOdds', {feedName: fixture.feedName, odds:{home:1,draw:1, away:1, canceled: 1}});
+						this.$store.commit('setNewOdds', {feedName: fixture.feedName, odds:{ home:1,draw:1, away:1, canceled: 1}});
 				});
 
 				allFixtures.sort((a,b)=>{
@@ -129,11 +150,9 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
+  text-align: left;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

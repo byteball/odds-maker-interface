@@ -58,42 +58,15 @@ async function transferToOdex(arrFixtures, callbackTransferred, callbackComplete
 	callbackCompleted();
 	client.close();
 }
-/*		home_asset: function(){
-			return this.$store.state.odex_balances[this.feedName+ '-' + this.fixture.feedHomeTeamName] || 0;
-		},
-		away_asset: function(){
-			return this.$store.state.odex_balances[this.feedName+ '-' + this.fixture.feedAwayTeamName] || 0;
-		},
-		draw_asset: function(){
-			return this.$store.state.odex_balances[this.feedName+ '-DRAW'] || 0;
 
-		},
-		canceled_asset: function(){
-			return this.$store.state.odex_balances[this.feedName+ '-CANCELED'] || 0;
-		},*/
-		
 async function redeemWinningAsset(arrFixtures, callbackTransferred, callbackCompleted){
 	await refreshWalletBalances();
 	const client = new obyte.Client(userConf.hub_ws_url, userConf);
 		for (var i=0; i<arrFixtures.length; i++){
 			const fixture = arrFixtures[i];
 			if (fixture.assets){
-					if (fixture.assets && fixture.result){
-						//SA_BGN_SAS_2020-07-08
-						var asset;
-						if (fixture.result === fixture.feedName.split('_')[1]){
-							asset = fixture.assets.home;
-						}
-						else if (fixture.result === fixture.feedName.split('_')[2]){
-							asset = fixture.assets.away;
-						}
-						else if (fixture.result === 'draw'){
-							asset = fixture.assets.draw;
-						}
-						else if (fixture.result === 'canceled'){
-							asset = fixture.assets.canceled;
-						}
-
+				if (fixture.assets && fixture.result){
+					const asset = fixture.winning_asset;
 					if (store.state.wallet_balances[asset]){
 						const amount = store.state.wallet_balances[asset].stable;
 						let definition = getParameterizedDefinition(fixture);
@@ -144,7 +117,6 @@ async function transferToWallet(arrFixtures, callbackRequested, callbackComplete
 		for (var i=0; i<arrFixtures.length; i++){
 			const fixture = arrFixtures[i];
 			if (fixture.assets && fixture.result){
-				//SA_BGN_SAS_2020-07-08
 				var asset, symbol;
 				if (fixture.result === fixture.feedName.split('_')[1]){
 					asset = fixture.assets.home;
@@ -309,7 +281,7 @@ function myOdexOrderRemoved(hash){
 
 
 async function start(_userConf){
-
+	_userConf.odex_http_url = _userConf.odex_http_base_url + '/api';
 	if (store.state.isConnected){
 		return 'already started';
 	}
@@ -319,9 +291,6 @@ async function start(_userConf){
 	try {
 		await odex.start(_userConf);
 		orders = odex.orders;
-/*		ws_api = odex.ws_api;
-		balances = odex.balances;
-		exchange= odex.exchange;*/
 		await orders.trackMyOrders();
 
 
@@ -330,11 +299,9 @@ async function start(_userConf){
 		return "Coudln't start Odex client: " + e.toString();
 	}
 	initMyOdexOrders();
-	console.log(orders.assocMyOrders);
 	odex.ws_api.on('reset_orders', initMyOdexOrders);
 	odex.ws_api.on('my_order_added', myOdexOrderAdded);
 	odex.ws_api.on('my_order_removed', myOdexOrderRemoved);
-
 
 	store.commit("setConnectedStatus", true);
 	store.commit("setConnectingStatus", false);
@@ -364,7 +331,6 @@ async function cancelOdexOddsForFixture(fixture){
 async function cancelOdexOddsForAsset(asset){
 	if (assocOrdersByAsset[asset])
 		await orders.createAndSendCancel(assocOrdersByAsset[asset]);
-
 }
 
 async function setOdexOdds(fixtures){
@@ -374,13 +340,12 @@ async function setOdexOdds(fixtures){
 			await orders.createAndSendCancel(assocOrdersByAsset[fixture.assets[type]]);
 		} else {
 			try {
-			await axios.post(store.state.connections.odex_http_url + '/pairs/create', {
+			await axios.post(store.state.connections.odex_http_base_url + '/api/pairs/create', {
 				asset: fixture.assets[type]
 			})
 			} catch(e){
 				console.log(e);
 			}
-			await odex.exchange.refreshTokensList();
 		}
 		if (type === 'draw' && !store.state.odds_configuration.with_draw_championships[fixture.championship])
 			return console.log("will not set draw odds");
@@ -389,7 +354,9 @@ async function setOdexOdds(fixtures){
 		const symbol = fixture.assets[type +'_symbol'];
 		const balance = store.state.odex_balances[symbol] / (10 ** conf.asset_decimals);
 		if (balance > 0){
-			console.log(type +'  '+ store.state.newOdds[fixture.feedName][type])
+			const odds = store.state.newOdds[fixture.feedName][type];
+			if (!odds)
+				return console.log("no " + type +" odds to be set");
 			let expiry_set_moment = moment().add(store.state.odds_configuration.odds_expiration_in_hours, 'hours');
 			let hash = await orders.createAndSendOrder(
 				symbol + '/GBYTE',

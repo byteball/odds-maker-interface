@@ -1,24 +1,44 @@
 <template>
-	<div v-if="has_odex_balance">
-		<div class="columns">
+	<div>
+		<div v-if="fixture.assets" class="columns">
 			<div class="column is-2">
-				<b-field label='home'>
-					<b-numberinput  v-model="home_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+				<b-field>
+					<template slot="label">
+							<a :href="conf.odex_url + 'trade/' + fixture.assets.home_symbol + '/GBYTE'" target="_blank" >home	<b-icon icon="open-in-new" /></a>
+					</template>
+					<b-tooltip type="is-info" label="your current home odds">
+						<b-numberinput  v-model="home_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+					</b-tooltip>
 				</b-field>
 			</div>
 			<div v-if="has_draw_odds" class="column is-2">
-				<b-field label='draw'>
-					<b-numberinput v-model="draw_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+				<b-field >
+					<template slot="label">
+						<a :href="conf.odex_url + 'trade/' + fixture.assets.draw_symbol + '/GBYTE'" target="_blank" >draw<b-icon icon="open-in-new" /></a>
+					</template>
+					<b-tooltip type="is-info" label="your current draw odds">
+						<b-numberinput v-model="draw_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+					</b-tooltip>
 				</b-field>
 			</div>
 			<div class="column is-2">
-				<b-field label='away'>
-					<b-numberinput v-model="away_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+				<b-field>
+					<template slot="label">
+						<a :href="conf.odex_url + 'trade/' + fixture.assets.away_symbol + '/GBYTE'" target="_blank" >away<b-icon icon="open-in-new" /></a>
+					</template>
+					<b-tooltip type="is-info" label="your current away odds">
+						<b-numberinput v-model="away_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+					</b-tooltip>
 				</b-field>
 			</div>
 			<div v-if="has_cancel_odds" class="column is-2">
-				<b-field label='canceled'>
-					<b-numberinput  v-model="canceled_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+				<b-field>
+					<template slot="label">
+						<a :href="conf.odex_url + 'trade/' + fixture.assets.canceled_symbol + '/GBYTE'" target="_blank" >canceled<b-icon icon="open-in-new" /></a>
+					</template>
+					<b-tooltip type="is-info" label="your current canceled odds">
+						<b-numberinput  v-model="canceled_odds" :step="0.01" :controls="false" size="is-small" disabled></b-numberinput>
+					</b-tooltip>
 				</b-field>
 			</div>
 			<div class="column is-2">
@@ -45,12 +65,6 @@ export default {
 		}
 	},
 	computed: {
-		has_odex_balance: function(){
-			return this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedHomeTeamName]
-			|| this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedAwayTeamName]
-			|| this.$store.state.odex_balances[this.fixture.feedName+ '-DRAW']
-			|| this.$store.state.odex_balances[this.fixture.feedName+ '-CANCELED']
-		},
 		has_cancel_odds:function(){
 			return this.$store.state.odds_configuration && this.$store.state.odds_configuration.with_cancel_championships[this.fixture.championship]
 		},

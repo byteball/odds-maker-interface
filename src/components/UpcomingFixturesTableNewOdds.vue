@@ -25,7 +25,9 @@
 				<b-button class="is-primary" @click="setOdexOdds(fixture)" size="is-small">set odds</b-button>
 			</div>
 		</div>
-
+	</div>
+	<div v-else-if="has_wallet_balance">
+		Transfer assets to Odex before setting your odds
 	</div>
 </template>
 
@@ -51,6 +53,12 @@ export default {
 			|| this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedAwayTeamName]
 			|| this.$store.state.odex_balances[this.fixture.feedName+ '-DRAW']
 			|| this.$store.state.odex_balances[this.fixture.feedName+ '-CANCELED']
+		},
+		has_wallet_balance: function(){
+			return this.fixture.assets && (this.$store.state.wallet_balances[this.fixture.assets.home]
+			|| this.$store.state.wallet_balances[this.fixture.assets.draw]
+			|| this.$store.state.wallet_balances[this.fixture.assets.away]
+			|| this.$store.state.wallet_balances[this.fixture.assets.canceled])
 		},
 		has_cancel_odds:function(){
 			return this.$store.state.odds_configuration && this.$store.state.odds_configuration.with_cancel_championships[this.fixture.championship]

@@ -8,7 +8,7 @@
 				</b-tooltip>
 			</template>
 			<b-input class="mr-05" @input="onChange" v-model="the_odds_api_key" type="password" autocomplete="off" :disabled="is_key_saved"></b-input>
-			<b-button class="is-primary" v-if="is_key_saved" @click="deleteApiKey">Delete from computer</b-button>				
+			<b-button class="is-primary" v-if="is_key_saved" @click="deleteApiKey">Delete from computer</b-button>
 			<b-button class="is-primary" v-if="!is_key_saved && is_key_valid" @click="saveApiKey">Save on computer</b-button>
 		</b-field>
 
@@ -34,11 +34,17 @@
 					</option>
 				</b-select>
 			</b-field>
-			</div>
-			<b-field label='Canceled odds'>
-				<b-numberinput  v-model="canceled_odds" :step="0.01" :controls="false" size="is-small" ></b-numberinput>
-			</b-field>
-			<b-button class="is-primary" @click="downloadOdds">Get odds</b-button>
+		</div>
+		<b-field label='Canceled odds'>
+			<b-numberinput  v-model="canceled_odds" :step="0.01" :controls="false" size="is-small" ></b-numberinput>
+		</b-field>
+		<b-field label='Markup in percent'>
+			<b-numberinput  v-model="markup" :step="0.01" :controls="true" size="is-small" ></b-numberinput>
+		</b-field>
+		<div class="buttons">
+			<b-button class="is-primary" @click="getAndPrefillOdds">Get odds and prefill form</b-button>
+			<b-button class="is-primary" @click="getAndSetOdds">Get and set odds</b-button>
+		</div>
 	</div>
 </template>
 
@@ -46,6 +52,7 @@
 
 const teamToFeed = require('./TheOddsApi.json');
 const moment = require('moment');
+import { EventBus } from '../../js/event-bus.js';
 
 export default {
   props: {
@@ -62,7 +69,7 @@ export default {
 			regions: ['au', 'eu', 'uk', 'us'],
 			selected_region: '',
 			selected_championship: '',
-			markup: 0,
+			markup: this.$store.state.odds_configuration.default_markup,
 			canceled_odds: this.$store.state.odds_configuration.default_canceled_odds,
 			newOdds: {}
 		}
@@ -97,14 +104,35 @@ export default {
 			}
 			this.$store.commit("setCredentials", this.credentials)
 		},
-		downloadOdds(){
+		getAndSetOdds(){
+			this.getAndPrefillOdds(true);
+		},
+		getAndPrefillOdds(andSet){
+			if (!this.selected_championship.length)
+				return this.$buefy.toast.open({
+					duration: 5000,
+					message: 'Championship not selected',
+					position: 'is-bottom',
+					type: 'is-danger'
+				})
+			if (!this.selected_region.length)
+				return this.$buefy.toast.open({
+					duration: 5000,
+					message: 'Region not selected',
+					position: 'is-bottom',
+					type: 'is-danger'
+				})
+			const selected_championship = this.selected_championship;
 			this.axios.get("https://api.the-odds-api.com/v3/odds/?apiKey="+this.the_odds_api_key+"&sport=" 
-			+ teamToFeed[this.selected_championship].key + "&region=" + this.selected_region)
+			+ teamToFeed[selected_championship].key + "&region=" + this.selected_region)
 			.then((response) => {
 				if (response.data.data) {
 					response.data.data.forEach((event)=>{
 						this.prefillNewOddsForEvent(event);
 					});
+					if (andSet){
+						EventBus.$emit('setOddsForChampionship', selected_championship)
+					}
 				}
 			});
 		},
@@ -126,7 +154,6 @@ export default {
 				+ teamToFeed[this.selected_championship][event.teams[1]] + "_" 
 				+ day;
 				for (let site in event.sites) {
-
 					if (Number(event.sites[site].odds.h2h[0]) > 1) {
 						odds_1 += Number(event.sites[site].odds.h2h[0]);
 						count_odds_1++;
@@ -163,6 +190,7 @@ export default {
 					}
 				}
 			}
+			// we average odds from different bookmakers
 			if (count_odds_1 > 0)
 				odds_1 = odds_1 / count_odds_1;
 			if (count_odds_x > 0)

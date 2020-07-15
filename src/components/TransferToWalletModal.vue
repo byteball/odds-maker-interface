@@ -10,25 +10,25 @@
 				<span class="mr-05">Request to transfer winning assets from Odex to wallet </span>
 				<div v-for="fixture in fixtures" class="row" :key="fixture.feedName">
 					<div v-if="fixture.assets">
-						<div>{{ fixture.assets.home_symbol }}
+						<div v-if="fixture.winning_asset==fixture.assets.home"> {{ fixture.assets.home_symbol }}
 							<span v-if="assocRequested[fixture.assets.home]"> - requested: 
 								<asset-or-byte-amount :amount="assocRequested[fixture.assets.home].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.home].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 							</span>
 						</div>
-						<div>{{ fixture.assets.away_symbol }}
+						<div v-if="fixture.winning_asset==fixture.assets.away">{{ fixture.assets.away_symbol }}
 							<span v-if="assocRequested[fixture.assets.away]"> - requested:
 								<asset-or-byte-amount :amount="assocRequested[fixture.assets.away].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.away].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 								</span>
 						</div>
-						<div>{{ fixture.assets.draw_symbol }}
+						<div v-if="fixture.winning_asset==fixture.assets.canceled">{{ fixture.assets.draw_symbol }}
 							<span v-if="assocRequested[fixture.assets.canceled]"> - requested:
 								<asset-or-byte-amount :amount="assocRequested[fixture.assets.canceled].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.canceled].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 							</span>
 						</div>
-						<div>{{ fixture.assets.canceled_symbol }}
+						<div v-if="fixture.winning_asset==fixture.assets.draw">{{ fixture.assets.canceled_symbol }}
 							<span v-if="assocRequested[fixture.assets.draw]"> - requested:
 								<asset-or-byte-amount :amount="assocRequested[fixture.assets.draw].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.draw].unit" target="_blank"><b-icon icon="open-in-new" /></a>
@@ -37,7 +37,7 @@
 					</div>
 				</div>
 				<div v-if="isTransferCompleted" class="mt-1">
-					<span class="mr-05">All transfers completed, balances on Odex will appear once transactions are confirmed</span><b-icon icon="thumb-up" />
+					<span class="mr-05">All transfers requested <b-icon icon="thumb-up" /></span>
 				</div>
 				<div v-else class="mt-1">
 					<b-progress></b-progress>

@@ -7,29 +7,29 @@
 		<section class="modal-card-body">
 
 			<div class="container">
-				<span class="mr-05">Request to transfer winning assets from Odex to wallet </span>
+				<span class="mr-05">Request to redeem winning asset </span>
 				<div v-for="fixture in fixtures" class="row" :key="fixture.feedName">
 					<div v-if="fixture.assets">
-						<div>{{ fixture.assets.home_symbol }}
-							<span v-if="assocTransferred[fixture.assets.home]"> - transferred: 
+						<div v-if="fixture.winning_asset==fixture.assets.home">{{ fixture.assets.home_symbol }}
+							<span v-if="assocTransferred[fixture.assets.home]"> - requested: 
 								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.home].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.home].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 							</span>
 						</div>
-						<div>{{ fixture.assets.away_symbol }}
-							<span v-if="assocTransferred[fixture.assets.away]"> - transferred:
+						<div v-if="fixture.winning_asset==fixture.assets.away">{{ fixture.assets.away_symbol }}
+							<span v-if="assocTransferred[fixture.assets.away]"> - requested:
 								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.away].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.away].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 								</span>
 						</div>
-						<div>{{ fixture.assets.draw_symbol }}
-							<span v-if="assocTransferred[fixture.assets.canceled]"> - transferred:
+						<div v-if="fixture.winning_asset==fixture.assets.canceled">{{ fixture.assets.draw_symbol }}
+							<span v-if="assocTransferred[fixture.assets.canceled]"> - requested:
 								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.canceled].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.canceled].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 							</span>
 						</div>
-						<div>{{ fixture.assets.canceled_symbol }}
-							<span v-if="assocTransferred[fixture.assets.draw]"> - transferred:
+						<div v-if="fixture.winning_asset==fixture.assets.draw">{{ fixture.assets.canceled_symbol }}
+							<span v-if="assocTransferred[fixture.assets.draw]"> - requested:
 								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.draw].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.draw].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 							</span>
@@ -37,7 +37,8 @@
 					</div>
 				</div>
 				<div v-if="isTransferCompleted" class="mt-1">
-					<span class="mr-05">All transfers completed, balances on Odex will appear once transactions are confirmed</span><b-icon icon="thumb-up" />
+					<span class="mr-05">All redemptions requested <b-icon icon="thumb-up" /></span>
+					<span>Bytes will be credited once transactions are confirmed</span>
 				</div>
 				<div v-else class="mt-1">
 					<b-progress></b-progress>
@@ -80,12 +81,10 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 		},
 		methods: {
 			callbackTransferred: function(asset, amount, unit){
-				console.log('transferred ' +asset + ' ' + amount);
 				this.$set(this.assocTransferred, asset,{
 					amount,
 					unit
 				});
-				console.log(this.assocTransferred);
 			},
 			callbackCompleted: function(err){
 				if (err)

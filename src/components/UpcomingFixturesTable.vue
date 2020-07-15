@@ -1,15 +1,10 @@
 <template>
 <div>
-	<div class="columns">
-		<span class="title is-6 mr-05 mt-05">For selection: </span>
-		<div class="buttons column">
-			<b-button @click="issueAsset" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Issue asset</b-button>
-			<b-button @click="transferToOdex" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Transfer to Odex</b-button>
-			<b-button @click="setOdexOddsForFixtures" :disabled="!checkedRows.length" class="is-pulled-left is-primary">set odds</b-button>
-		</div>
-		<div class="buttons column">
-			<b-button @click="prefillNewOdds" class="is-primary">Get external odds</b-button>
-		</div>
+	<div class="buttons">
+		<b-button @click="getExternalOdds" class="is-primary">Get external odds</b-button>
+		<span class="ml-1 mr-05">For selection: </span>
+		<b-button @click="issueAsset" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Issue asset</b-button>
+		<b-button @click="transferToOdex" :disabled="!checkedRows.length" class="is-pulled-left is-primary">Transfer to Odex</b-button>
 	</div>
 
 	<b-table 
@@ -39,8 +34,9 @@
 				</div>
 			</b-table-column>
 
-			<b-table-column label="Balances"  field="on_wallet" custom-key='on_wallet' >
+			<b-table-column label="Balances by asset"  field="on_wallet" custom-key='on_wallet' >
 				<assets-on-wallets :fixture="props.row" />
+				<fixture-actions :fixture="props.row" />
 				<assets-on-odex :fixture="props.row" />
 			</b-table-column>
 
@@ -56,20 +52,19 @@
 </template>
 
 <script>
-//import core from '../js/core.js'
 import AssetsOnWallets from './AssetsOnWallets.vue'
 import AssetsOnOdex from './AssetsOnOdex.vue'
 import TransferToOdexModal from './TransferToOdexModal.vue'
 import IssueAssetsModal from './IssueAssetsModal.vue'
-import PrefillNewOdds from './PrefillNewOdds.vue'
+import GetExternalOdds from './GetExternalOdds.vue'
 import NewOdds from './UpcomingFixturesTableNewOdds.vue'
 import MyOdds from './UpcomingFixturesTableMyOdds.vue'
+import FixtureActions from './UpcomingFixtureActions.vue'
 import moment from 'moment';
-
+import { EventBus } from '../js/event-bus.js';
+import { ModalProgrammatic } from 'buefy'
 import core from '../js/core.js'
 
-import { ModalProgrammatic } from 'buefy'
-//import conf from '../js/conf.js'
 
 export default {
 	components: {
@@ -77,6 +72,7 @@ export default {
 		AssetsOnOdex,
 		NewOdds,
 		MyOdds,
+		FixtureActions
 	},
   props: {
 		fixtures: Array
@@ -89,7 +85,10 @@ export default {
 		}
 	},
 	created(){
-
+		EventBus.$on('setOddsForChampionship', (championship)=>{
+			const arrFixtures = this.fixtures.filter(fixture => fixture.championship == championship)
+			core.setOdexOdds(arrFixtures);
+		});
 
 	},
 	computed: {
@@ -116,11 +115,11 @@ export default {
 				props: { fixtures: this.checkedRows },
 			})
 		},
-		prefillNewOdds: function(){
+		getExternalOdds: function(){
 			ModalProgrammatic.open({
 				parent: this,
-				component: PrefillNewOdds,
-				hasModalCard: true
+				component: GetExternalOdds,
+				hasModalCard: true,
 			})
 		},
 		setOdexOddsForFixtures: function(){

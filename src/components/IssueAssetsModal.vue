@@ -16,7 +16,7 @@
 				<div>
 					{{amount}} GB on {{fixtures.length}} fixture{{fixtures.length > 1 ? 's' : ''}} = <asset-or-byte-amount :amount="total_amount" /> GB
 				</div>
-				<div v-if="!trigger_unit">
+				<div class="p-1" v-if="!trigger_unit">
 					<b-button v-if="total_amount && total_amount < available_amount && !isIssuing" class="is-primary" @click="issueAssets" > Issue assets</b-button>
 				</div>
 				<div v-else>
@@ -79,11 +79,11 @@ const issuing_fees = 10000;
 		},
 		methods: {
 			issueAssets: async function(){
-			this.isIssuing = true;
-			const err = await core.issueAssets(this.fixtures, Math.floor(this.amount*conf.gb_to_bytes) + issuing_fees, this.callbackCompleted);
-			if (err)
-				this.popToast(err);
-			this.isIssuing = false;
+				this.isIssuing = true;
+				const err = await core.issueAssets(this.fixtures, Math.floor(this.amount*conf.gb_to_bytes) + issuing_fees, this.callbackCompleted);
+				if (err)
+					this.popToast(err);
+				this.isIssuing = false;
 			},
 
 			callbackCompleted: function(err, unit){

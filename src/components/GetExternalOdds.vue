@@ -1,28 +1,23 @@
 
 
-	<template>
+<template>
 	<div class="modal-card">
 		<header class="modal-card-head">
-			<p class="modal-card-title">Issue assets</p>
+			<p class="modal-card-title">Get odds from external provider</p>
 			<button class="delete" aria-label="close" @click="$parent.close()"></button>
 		</header>	
 		<section class="modal-card-body">
-		<div>
-			<b-tabs>
-				<b-tab-item label="The odds API">
-					<the-odds-api />
-				</b-tab-item>
-				<b-tab-item label="another providers">
-				</b-tab-item>
-			</b-tabs>
-  </div>
-
+			<div>
+				<b-tabs>
+					<b-tab-item label="The odds API">
+						<the-odds-api />
+					</b-tab-item>
+				</b-tabs>
+			</div>
 		</section>
-
 	</div>
 </template>
 <script>
-const conf = require('../js/conf.js')
 import TheOddsApi from './oddsProvider/TheOddsApi.vue'
 
 	export default {
@@ -33,8 +28,6 @@ import TheOddsApi from './oddsProvider/TheOddsApi.vue'
 		},
 		data () {
 			return {
-
-				conf
 			}
 		},
 		computed: {
@@ -44,9 +37,6 @@ import TheOddsApi from './oddsProvider/TheOddsApi.vue'
 
 		},
 		methods: {
-
-
-			
 
 		},
 	}
