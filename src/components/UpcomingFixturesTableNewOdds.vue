@@ -27,7 +27,7 @@
 		</div>
 	</div>
 	<div v-else-if="has_wallet_balance">
-		Transfer assets to Odex before setting your odds
+		Transfer assets to Odex to enable odds setting
 	</div>
 </template>
 
@@ -77,8 +77,14 @@ export default {
 	},
 	methods: {
 
-		setOdexOdds: function(fixture){
-			core.setOdexOdds([fixture]);
+		setOdexOdds: async function(fixture){
+			let nb_odds_set = await core.setOdexOdds([fixture]);
+			return this.$buefy.toast.open({
+				duration: 5000,
+				message: nb_odds_set + " odds set",
+				position: 'is-bottom',
+				type: 'is-success'
+			})
 		}
 	}
 }

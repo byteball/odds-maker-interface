@@ -111,7 +111,60 @@ async function redeemWinningAsset(arrFixtures, callbackTransferred, callbackComp
 }
 
 
-async function transferToWallet(arrFixtures, callbackRequested, callbackCompleted){
+async function transferBytesToExternalAddress(amount, address, callbackCompleted){
+
+	const client = new obyte.Client(userConf.hub_ws_url, userConf);
+	const params =  
+	{
+		outputs: [{
+			amount,
+			address
+		}]
+	};
+
+		try {
+			var unit = await client.post.payment(params, userConf);
+		} catch (e){
+			client.close();
+			return callbackCompleted(e);
+		}
+	callbackCompleted(null, unit);
+	client.close();
+	refreshWalletBalances();
+
+}
+
+async function transferBytesToWallet(amount, callbackCompleted){
+	const client = new obyte.Client(userConf.hub_ws_url, userConf);
+	const params = [
+		{
+			app: 'data',
+			payload:{
+				asset: 'base',
+				withdraw: 1,
+				amount
+			}
+		},
+		{
+			app: 'payment',
+			payload:{
+				outputs: [{
+					amount: 10000,
+					address: conf.odex_aa_address
+				}]
+			}
+		}];
+		try {
+			var unit = await client.post.multi(params, userConf);
+		} catch (e){
+			client.close();
+			return callbackCompleted(e);
+		}
+	callbackCompleted(null, unit);
+	client.close();
+}
+
+async function transferAssetToWallet(arrFixtures, callbackRequested, callbackCompleted){
 	await refreshOdexBalances();
 	const client = new obyte.Client(userConf.hub_ws_url, userConf);
 		for (var i=0; i<arrFixtures.length; i++){
@@ -134,8 +187,7 @@ async function transferToWallet(arrFixtures, callbackRequested, callbackComplete
 					asset = fixture.assets.canceled;
 					symbol = fixture.feedName + '-canceled';
 				}
-				console.log(symbol);
-				console.log(store.state.odex_balances);
+
 				if (store.state.odex_balances[symbol]){
 					const amount = store.state.odex_balances[symbol];
 					if (amount === 0){
@@ -160,7 +212,6 @@ async function transferToWallet(arrFixtures, callbackRequested, callbackComplete
 							}]
 						}
 					}];
-					console.log(params);
 					try {
 						const unit = await client.post.multi(params, userConf);
 						callbackRequested(asset, amount, unit);
@@ -344,19 +395,25 @@ async function setOdexOdds(fixtures){
 				asset: fixture.assets[type]
 			})
 			} catch(e){
-				console.log(e);
+				console.log(e); //request fails if already created
 			}
 		}
-		if (type === 'draw' && !store.state.odds_configuration.with_draw_championships[fixture.championship])
-			return console.log("will not set draw odds");
-		if (type === 'canceled' && !store.state.odds_configuration.with_cancel_championships[fixture.championship])
-			return console.log("will not set cancel odds");
+		if (type === 'draw' && !store.state.odds_configuration.with_draw_championships[fixture.championship]){
+			console.log("will not set draw odds");
+			return false;
+		}
+		if (type === 'canceled' && !store.state.odds_configuration.with_cancel_championships[fixture.championship]){
+			console.log("will not set cancel odds");
+			return false;
+		}
 		const symbol = fixture.assets[type +'_symbol'];
 		const balance = store.state.odex_balances[symbol] / (10 ** conf.asset_decimals);
 		if (balance > 0){
 			const odds = store.state.newOdds[fixture.feedName][type];
-			if (!odds)
-				return console.log("no " + type +" odds to be set");
+			if (!odds){
+				console.log("no " + type +" odds to be set");
+				return false;
+			}
 			let expiry_set_moment = moment().add(store.state.odds_configuration.odds_expiration_in_hours, 'hours');
 			let hash = await orders.createAndSendOrder(
 				symbol + '/GBYTE',
@@ -367,18 +424,33 @@ async function setOdexOdds(fixtures){
 				expiry_set_moment.isAfter(fixture.dateMoment) || store.state.odds_configuration.odds_expiration_in_hours === 0 ? fixture.dateMoment.unix() : expiry_set_moment.unix()
 			);
 			assocOrdersByAsset[fixture.assets[type]] = hash;
+			return true;
+		} else {
+			return false;
 		}
 	}
 
-
-	fixtures.forEach((fixture)=>{
+	async function setOddsForFixture(fixture){
 		if (!fixture.assets)
-			return;
-		setOddsForAsset(fixture, 'away');
-		setOddsForAsset(fixture, 'home');
-		setOddsForAsset(fixture, 'draw');
-		setOddsForAsset(fixture, 'canceled');
-	});
+			return 0;
+		const results = await Promise.all([
+			setOddsForAsset(fixture, 'away'),
+			setOddsForAsset(fixture, 'home'),
+			setOddsForAsset(fixture, 'draw'),
+			setOddsForAsset(fixture, 'canceled')
+		]);
+		return results.reduce((sum, result)=>{ // we return the number of odds set for this fixture
+			return sum + (result ? 1 : 0);
+		},0);
+	}
+
+	const results = await Promise.all(fixtures.map((fixture)=>{
+		return setOddsForFixture(fixture);
+	}));
+
+	return results.reduce((sum, result)=>{ // we return the number of odds set for all fixtures
+		return sum + result;
+	},0);
 
 }
 
@@ -389,7 +461,9 @@ exports.stop = stop;
 exports.refreshBalances = refreshBalances;
 exports.issueAssets = issueAssets;
 exports.transferToOdex = transferToOdex;
-exports.transferToWallet = transferToWallet;
+exports.transferAssetToWallet = transferAssetToWallet;
 exports.setOdexOdds = setOdexOdds;
 exports.cancelOdexOddsForFixture = cancelOdexOddsForFixture;
 exports.redeemWinningAsset = redeemWinningAsset;
+exports.transferBytesToWallet = transferBytesToWallet;
+exports.transferBytesToExternalAddress = transferBytesToExternalAddress;

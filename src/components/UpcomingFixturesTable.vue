@@ -85,9 +85,15 @@ export default {
 		}
 	},
 	created(){
-		EventBus.$on('setOddsForChampionship', (championship)=>{
+		EventBus.$on('setOddsForChampionship', async (championship)=>{
 			const arrFixtures = this.fixtures.filter(fixture => fixture.championship == championship)
-			core.setOdexOdds(arrFixtures);
+			const nb_odds_set = await core.setOdexOdds(arrFixtures);
+			return this.$buefy.toast.open({
+				duration: 5000,
+				message: nb_odds_set + " odds set",
+				position: 'is-bottom',
+				type: 'is-success'
+			})
 		});
 
 	},
@@ -121,9 +127,6 @@ export default {
 				component: GetExternalOdds,
 				hasModalCard: true,
 			})
-		},
-		setOdexOddsForFixtures: function(){
-			core.setOdexOdds(this.checkedRows);
 		}
 	}
 }

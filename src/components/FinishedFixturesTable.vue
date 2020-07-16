@@ -49,7 +49,7 @@
 //import core from '../js/core.js'
 import AssetsOnWallets from './AssetsOnWallets.vue'
 import AssetsOnOdex from './AssetsOnOdex.vue'
-import TransferToWalletModal from './TransferToWalletModal.vue'
+import TransferToWalletModal from './TransferAssetsToWalletModal.vue'
 import FixtureAction from './FinishedFixtureAction.vue'
 
 import RedeemAssetModal from './RedeemAssetModal.vue'

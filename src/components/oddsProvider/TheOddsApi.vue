@@ -19,7 +19,7 @@
 						v-for="championship in championships"
 						:value="championship"
 						:key="championship">
-						{{championship}}
+						{{$t(championship)}}
 					</option>
 				</b-select>
 			</b-field>
@@ -35,7 +35,7 @@
 				</b-select>
 			</b-field>
 		</div>
-		<b-field label='Canceled odds'>
+		<b-field v-if="has_cancel_odds" label='Canceled odds'>
 			<b-numberinput  v-model="canceled_odds" :step="0.01" :controls="false" size="is-small" ></b-numberinput>
 		</b-field>
 		<b-field label='Markup in percent'>
@@ -44,6 +44,9 @@
 		<div class="buttons">
 			<b-button class="is-primary" @click="getAndPrefillOdds">Get odds and prefill form</b-button>
 			<b-button class="is-primary" @click="getAndSetOdds">Get and set odds</b-button>
+		</div>
+		<div>
+		{{odds_downloaded_message}}
 		</div>
 	</div>
 </template>
@@ -62,11 +65,12 @@ export default {
 			is_form_complete: false,
 			is_key_saved: false,
 			key_message: '',
+			odds_downloaded_message: '',
 			the_odds_api_key: '',
 			is_key_valid: false,
 			wallet_address: '',
-			championships: ['PD', 'SA', 'PL', 'BL1'],
-			regions: ['au', 'eu', 'uk', 'us'],
+			championships: ['PD', 'SA', 'PL', 'BL1', ],
+			regions: ['uk', 'au', 'eu', 'us'],
 			selected_region: '',
 			selected_championship: '',
 			markup: this.$store.state.odds_configuration.default_markup,
@@ -75,12 +79,16 @@ export default {
 		}
 	},
 	computed: {
-
+		has_cancel_odds:function(){
+			return this.$store.state.odds_configuration && this.$store.state.odds_configuration.with_cancel_championships[this.selected_championship]
+		},
 	},
 	created() {
+		this.selected_region = this.regions[0];
 		this.is_key_saved = !!localStorage.getItem('the_odds_api_key')
 		this.the_odds_api_key = localStorage.getItem('the_odds_api_key') || ''
-		this.onChange()
+		this.onChange();
+
 	},
 	watch:{
 
@@ -122,6 +130,7 @@ export default {
 					position: 'is-bottom',
 					type: 'is-danger'
 				})
+			this.odds_downloaded_message = '';
 			const selected_championship = this.selected_championship;
 			this.axios.get("https://api.the-odds-api.com/v3/odds/?apiKey="+this.the_odds_api_key+"&sport=" 
 			+ teamToFeed[selected_championship].key + "&region=" + this.selected_region)
@@ -134,7 +143,12 @@ export default {
 						EventBus.$emit('setOddsForChampionship', selected_championship)
 					}
 				}
+
+				this.odds_downloaded_message = "Got odds for " + response.data.data.length + " fixtures, " + response.headers['x-requests-remaining'] 
+				+ " requests remaining for the month.";
+				
 			});
+
 		},
 		prefillNewOddsForEvent(event){
 
@@ -198,13 +212,17 @@ export default {
 			if (count_odds_2 > 0)
 				odds_2 = odds_2 / count_odds_2;
 
+			odds_1 = odds_1 - (odds_1 - 1) * this.markup/100;
+			odds_x = odds_x - (odds_x - 1) * this.markup/100;
+			odds_2 = odds_2 - (odds_2 - 1) * this.markup/100;
+
 			this.$store.commit('setNewOdds', {
 				feedName, 
 				odds: {
 					home: Number(odds_1.toFixed(2)), 
 					draw: Number(odds_x.toFixed(2)), 
 					away: Number(odds_2.toFixed(2)), 
-					canceled: 50
+					canceled: this.canceled_odds
 				}
 			});
 		}

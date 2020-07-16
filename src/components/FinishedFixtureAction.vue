@@ -7,7 +7,7 @@
 
 <script>
 //import core from '../js/core.js'
-import TransferToWalletModal from './TransferToWalletModal.vue'
+import TransferToWalletModal from './TransferAssetsToWalletModal.vue'
 import RedeemAssetModal from './RedeemAssetModal.vue'
 
 import { ModalProgrammatic } from 'buefy'

@@ -58,31 +58,31 @@ export default {
 			odds_configuration: {},
 			timer_options: [
 				{
-					label: 'at fixture beginning',
+					label: 'when fixture starts',
 					value: 0
 				},
 				{
-					label: 'after 1 hour or at fixture beginning',
+					label: 'after 1 hour or when fixture starts',
 					value: 1
 				},
 				{
-					label: 'after 3 hours or at fixture beginning',
+					label: 'after 3 hours or when fixture starts',
 					value: 3
 				},
 				{
-					label: 'after 12 hours or at fixture beginning',
+					label: 'after 12 hours or when fixture starts',
 					value: 12
 				},
 				{
-					label: 'after 1 day or at fixture beginning',
+					label: 'after 1 day or when fixture starts',
 					value: 1 * 24
 				},
 				{
-					label: 'after 2 days or at fixture beginning',
+					label: 'after 2 days or when fixture starts',
 					value: 2 * 24
 				},
 				{
-					label: 'after 3 days or at fixture beginning',
+					label: 'after 3 days or when fixture starts',
 					value: 3 * 24
 				},
 			]
@@ -112,10 +112,6 @@ export default {
 			localStorage.setItem('odds_configuration', JSON.stringify(this.odds_configuration));
 		},
 		onChange(){
-			console.log('onChange')
-						console.log(this.odds_configuration)
-
-			//this.credentials.bComplete = this.is_form_complete = bComplete
 			this.$store.commit("setOddsConfiguration", this.odds_configuration)
 			this.saveOddsConfiguration();
 		}

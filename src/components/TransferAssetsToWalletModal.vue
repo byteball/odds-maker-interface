@@ -74,7 +74,7 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 				this.popToast("No fixtures selected");
 				this.$parent.close()
 			}
-			const err = await core.transferToWallet(this.fixtures, this.callbackTransferred, this.callbackCompleted);
+			const err = await core.transferAssetToWallet(this.fixtures, this.callbackTransferred, this.callbackCompleted);
 			if (err)
 			this.popToast(err);
 		},
