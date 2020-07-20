@@ -42,8 +42,8 @@
 			<b-numberinput  v-model="markup" :step="0.01" :controls="true" size="is-small" ></b-numberinput>
 		</b-field>
 		<div class="buttons">
-			<b-button class="is-primary" @click="getAndPrefillOdds">Get odds and prefill form</b-button>
-			<b-button class="is-primary" @click="getAndSetOdds">Get and set odds</b-button>
+			<b-button :disabled="is_setting_odds" class="is-primary" @click="getAndPrefillOdds">Get odds and prefill form</b-button>
+			<b-button :disabled="is_setting_odds" class="is-primary" @click="getAndSetOdds">Get and set odds</b-button>
 		</div>
 		<div>
 		{{odds_downloaded_message}}
@@ -69,13 +69,14 @@ export default {
 			the_odds_api_key: '',
 			is_key_valid: false,
 			wallet_address: '',
-			championships: ['PD', 'SA', 'PL', 'BL1', ],
+			championships: ['PD', 'SA', 'PL', 'BL1', 'NBA', 'BSA'],
 			regions: ['uk', 'au', 'eu', 'us'],
 			selected_region: '',
 			selected_championship: '',
 			markup: this.$store.state.odds_configuration.default_markup,
 			canceled_odds: this.$store.state.odds_configuration.default_canceled_odds,
-			newOdds: {}
+			newOdds: {},
+			is_setting_odds: false
 		}
 	},
 	computed: {
@@ -132,6 +133,7 @@ export default {
 				})
 			this.odds_downloaded_message = '';
 			const selected_championship = this.selected_championship;
+			this.is_setting_odds = true;
 			this.axios.get("https://api.the-odds-api.com/v3/odds/?apiKey="+this.the_odds_api_key+"&sport=" 
 			+ teamToFeed[selected_championship].key + "&region=" + this.selected_region)
 			.then((response) => {
@@ -141,12 +143,23 @@ export default {
 					});
 					if (andSet){
 						EventBus.$emit('setOddsForChampionship', selected_championship)
-					}
+						EventBus.$once('oddsSet', ()=>{
+							this.is_setting_odds = false;
+						})
+					} else 
+						this.is_setting_odds = false;
 				}
 
 				this.odds_downloaded_message = "Got odds for " + response.data.data.length + " fixtures, " + response.headers['x-requests-remaining'] 
 				+ " requests remaining for the month.";
-				
+			}).catch((err)=>{
+				this.is_setting_odds = false;
+				this.$buefy.toast.open({
+					duration: 5000,
+					message: err,
+					position: 'is-bottom',
+					type: 'is-danger'
+				})
 			});
 
 		},

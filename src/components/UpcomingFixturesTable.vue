@@ -88,6 +88,7 @@ export default {
 		EventBus.$on('setOddsForChampionship', async (championship)=>{
 			const arrFixtures = this.fixtures.filter(fixture => fixture.championship == championship)
 			const nb_odds_set = await core.setOdexOdds(arrFixtures);
+			EventBus.$emit('oddsSet', nb_odds_set);
 			return this.$buefy.toast.open({
 				duration: 5000,
 				message: nb_odds_set + " odds set",

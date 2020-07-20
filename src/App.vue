@@ -1,19 +1,19 @@
 <template>
 	<div id="app">
-			<p class="title is-3 p-1">Odds maker interface</p>
-			<status />
+		<p class="title is-3 p-1">Odds maker interface</p>
+		<status />
 
-			<b-tabs>
-				<b-tab-item label="Upcoming fixtures">
-					<upcoming-fixtures-table :fixtures="upcomingFixtures" />
-				</b-tab-item>
-				<b-tab-item label="Finished fixtures">
-					<finished-fixtures-table :fixtures="finishedFixtures" />
-				</b-tab-item>
-				<b-tab-item label="Settings">
-					<settings />
-				</b-tab-item>
-			</b-tabs>
+		<b-tabs>
+			<b-tab-item label="Upcoming fixtures">
+				<upcoming-fixtures-table :fixtures="upcomingFixtures" />
+			</b-tab-item>
+			<b-tab-item label="Finished fixtures">
+				<finished-fixtures-table :fixtures="finishedFixtures" />
+			</b-tab-item>
+			<b-tab-item label="Settings">
+				<settings />
+			</b-tab-item>
+		</b-tabs>
 
   </div>
 </template>
