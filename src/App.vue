@@ -41,7 +41,6 @@ export default {
 		return {
 			upcomingFixtures: [],
 			finishedFixtures: [],
-	//		isConnected: false
 		}
 	},
 	created(){
@@ -64,6 +63,7 @@ export default {
 				})
 
 			const err = await core.start(Object.assign(
+				{},
 				this.$store.state.connections,
 				this.$store.state.credentials,
 			));

@@ -19,7 +19,6 @@
 				testnet
 				</b-checkbox>
 			</div>
-
 			<b-button class="is-primary" v-if="!matchDefaultTestnet && is_editing_allowed" @click="switchToDefaultTestnet" style="margin:10px;">Switch to testnet default</b-button>				
 			<b-button class="is-primary" v-if="!matchDefault && is_editing_allowed" @click="switchToDefault" style="margin:10px;">Switch to default</b-button>
 
@@ -84,6 +83,7 @@ export default {
 
 		connect: async function(){
 			const err = await core.start(Object.assign(
+				{},
 				this.$store.state.connections,
 				this.$store.state.credentials,
 			));
@@ -109,6 +109,7 @@ export default {
 			connections.odex_ws_url = this.default_odex_ws_url_testnet
 			connections.odex_http_base_url = this.default_odex_http_base_url_testnet
 			connections.hub_ws_url = this.default_hub_ws_url_testnet
+			connections.betting_api = this.default_betting_api_testnet
 			connections.testnet = true
 			this.connections = connections // we have to reference new object to refresh form values
 			this.onChange();
@@ -118,6 +119,7 @@ export default {
 			connections.odex_ws_url = this.default_odex_ws_url
 			connections.odex_http_base_url = this.default_odex_http_base_url
 			connections.hub_ws_url = this.default_hub_ws_url
+			connections.betting_api = this.default_betting_api
 			connections.testnet = false
 			this.connections = connections // we have to reference new object to refresh form values
 			this.onChange();
@@ -155,7 +157,7 @@ export default {
 			this.connections.bComplete = bComplete
 			if (bComplete)
 				this.saveConnections();
-			this.$store.commit("setConnections", this.connections)
+			this.$store.commit("setConnections", Object.assign({}, this.connections)) // new object for reactivity
 		}
 	}
 }
