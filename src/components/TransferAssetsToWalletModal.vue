@@ -22,13 +22,13 @@
 								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.away].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 								</span>
 						</div>
-						<div v-if="fixture.winning_asset==fixture.assets.canceled">{{ fixture.assets.draw_symbol }}
+						<div v-if="fixture.winning_asset==fixture.assets.canceled">{{ fixture.assets.canceled_symbol }}
 							<span v-if="assocRequested[fixture.assets.canceled]"> - requested:
 								<asset-or-byte-amount :amount="assocRequested[fixture.assets.canceled].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.canceled].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 							</span>
 						</div>
-						<div v-if="fixture.winning_asset==fixture.assets.draw">{{ fixture.assets.canceled_symbol }}
+						<div v-if="fixture.winning_asset==fixture.assets.draw">{{ fixture.assets.draw_symbol }}
 							<span v-if="assocRequested[fixture.assets.draw]"> - requested:
 								<asset-or-byte-amount :amount="assocRequested[fixture.assets.draw].amount"/> 
 								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.draw].unit" target="_blank"><b-icon icon="open-in-new" /></a>

@@ -101,7 +101,6 @@ export default {
 
 		saveConnections(){
 			for (var key in this.connections){
-				console.log(this.connections[key]);
 				localStorage.setItem(key, this.connections[key]) 
 			}
 		},
@@ -156,7 +155,6 @@ export default {
 			this.connections.bComplete = bComplete
 			if (bComplete)
 				this.saveConnections();
-				console.log('bComplete' +bComplete)
 			this.$store.commit("setConnections", this.connections)
 		}
 	}
