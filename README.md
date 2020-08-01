@@ -38,9 +38,9 @@ This bot is available ready to use on [odds-maker.papabyte.com](https://odds-mak
 
 ## Usage
 
-### Set a private key
+### Generate a seed
 
-Generate a WIF private key following one of the option described there: [https://obytejs.com/utils/generate-wallet](https://obytejs.com/utils/generate-wallet) then copy it to the settings.
+In settings, generate a new seed for your wallet and write it down as backup. Be aware that it's stored unencrypted on your browser and that anybody with an access to your computer could steal it.
 
 
 ### Fund the web wallet

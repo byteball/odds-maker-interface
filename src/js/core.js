@@ -235,7 +235,7 @@ function getParameterizedDefinition(objFixture){
 			home_team: objFixture.feedHomeTeamName,
 			away_team: objFixture.feedAwayTeamName, 
 			championship: objFixture.championship, 
-			expiry_date: objFixture.localDay
+			fixture_date: objFixture.localDay
 		}
 	}];
 }

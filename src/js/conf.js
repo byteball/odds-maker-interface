@@ -1,6 +1,6 @@
 exports.aa_address = 'FVRZTCFXIDQ3EYRGQSLE5AMWUQF4PRYJ';
 exports.odex_aa_address = 'FVRZTCFXIDQ3EYRGQSLE5AMWUQF4PRYJ';
-exports.issuer_base_aa = "DYCDBVYRODPCPEH4XMWE33HYAX7WOZ3W";
+exports.issuer_base_aa = "K6KIVWTU5C4JPSIQF5F42XYIQIIBHOIP";
 exports.asset_decimals = 9;
 exports.gb_to_bytes = 1e9;
 exports.oracle_address = process.env.VUE_APP_TESTNET ? '4EHFJW5EY74DG6PGSXX5CHF5F2FFIJX4' : '4EHFJW5EY74DG6PGSXX5CHF5F2FFIJX4';
