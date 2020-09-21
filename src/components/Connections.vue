@@ -39,7 +39,7 @@ export default {
 			default_odex_ws_url: "wss://odex.ooo/socket",
 			default_odex_http_base_url: "https://odex.ooo",
 			default_hub_ws_url: "wss://obyte.org/bb",
-			default_betting_api: "https://betting.papabyte.com/api",
+			default_betting_api: "https://sports.obet.ooo",
 			default_odex_ws_url_testnet: "wss://testnet.odex.ooo/socket",
 			default_odex_http_base_url_testnet: "https://testnet.odex.ooo",
 			default_hub_ws_url_testnet: "wss://obyte.org/bb-test",
