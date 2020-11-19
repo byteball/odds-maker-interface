@@ -1,11 +1,10 @@
 <template>
 	<div class="modal-card">
 		<header class="modal-card-head">
-			<p class="modal-card-title">Withdraw bytes to external address</p>
+			<p class="modal-card-title">Withdraw {{$store.getters.operatingSymbol}} to external address</p>
 			<button class="delete" aria-label="close" @click="$parent.close()"></button>
 		</header>	
 		<section class="modal-card-body">
-
 			<div class="container">
 				<b-field label="To address" :message="address_message" >
 					<b-input v-model="address"  autocomplete="off" />
@@ -14,13 +13,12 @@
 					<b-numberinput v-model="amount" :max="available_amount" :controls="false" :step="0.000000001"></b-numberinput>
 				</b-field>
 				<b-button v-if="!unit && !is_transferring &&is_valid_address" @click="transfer" class="is-primary">
-					Transfer <asset-or-byte-amount :amount="amount*conf.gb_to_bytes"/> GB to {{address}}</b-button>
+					Transfer <asset-or-byte-amount :amount="amount*(10 ** $store.getters.operatingDecimals)"/> {{$store.getters.operatingSymbol}} to {{address}}</b-button>
 				<div v-if="unit">
-					Bytes tranferred, balance will appear once confirmed. <a :href="conf.explorer_url +'#' + unit" target="_blank"><b-icon icon="open-in-new" /></a>
+					Bytes tranferred, balance will appear once confirmed. <a :href="explorer_url +'#' + unit" target="_blank"><b-icon icon="open-in-new" /></a>
 				</div>
 			</div>
 		</section>
-
 	</div>
 </template>
 <script>
@@ -37,7 +35,7 @@ const { isValidAddress } = require('obyte/lib/utils');
 		},
 		data () {
 			return {
-				amount: this.$store.state.wallet_balances.base / conf.gb_to_bytes,
+				amount: this.$store.state.wallet_balances[this.$store.getters.operatingSymbol],
 				amount_message: '',
 				address: '',
 				conf,
@@ -47,7 +45,7 @@ const { isValidAddress } = require('obyte/lib/utils');
 		},
 		computed: {
 			available_amount: function(){
-				return this.$store.state.wallet_balances.base / conf.gb_to_bytes;
+				return this.$store.state.wallet_balances[this.$store.getters.operatingSymbol];
 			},
 			address_message: function(){
 				return this.is_valid_address ? '' : 'Invalid address';
@@ -55,13 +53,16 @@ const { isValidAddress } = require('obyte/lib/utils');
 			is_valid_address: function(){
 				return isValidAddress(this.address);
 			},
+			explorer_url: function(){
+				return this.$store.state.connections.testnet ? conf.explorer_url.testnet : conf.explorer_url.mainnet;
+			}
 		},
 		created(){
 		},
 		methods: {
 			transfer: function(){
 				this.is_transferring = true;
-				core.transferBytesToExternalAddress(this.amount * conf.gb_to_bytes, this.address, (err, unit)=>{
+				core.transferOperatingAssetToExternalAddress(this.amount * (10 ** this.$store.getters.operatingDecimals), this.address, (err, unit)=>{
 					this.is_transferring = false;
 					if (err)
 						return this.$buefy.toast.open({

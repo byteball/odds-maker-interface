@@ -1,7 +1,7 @@
 <template>
 	<div class="buttons">
 		<b-button class="is-primary" @click="issueAsset" size="is-small">issue assets</b-button>
-		<b-button class="is-primary"  v-if="home_asset||draw_asset||away_asset||canceled_asset" @click="transferToOdex" size="is-small">transfer to Odex</b-button>
+		<b-button class="is-primary"  v-if="has_assets_on_wallet" @click="transferToOdex" size="is-small">transfer to Odex</b-button>
 	</div>
 </template>
 <script>
@@ -24,35 +24,32 @@ export default {
 		}
 	},
 	computed: {
-		home_asset: function(){
-			if (this.fixture.assets){
-				return this.sumBalances(this.$store.state.wallet_balances[this.fixture.assets.home])
+		has_assets_on_wallet: function(){
+			if (this.$store.state.wallet_balances && this.fixture.currencies
+					&& this.fixture.currencies[this.$store.getters.operatingAsset]
+					&& this.fixture.currencies[this.$store.getters.operatingAsset].assets){
+				if (this.sumPendingAndStable(this.fixture.currencies[this.$store.getters.operatingAsset].assets['home']) > 0)
+					return true;
+				if (this.sumPendingAndStable(this.fixture.currencies[this.$store.getters.operatingAsset].assets['draw']) > 0)
+					return true;
+				if (this.sumPendingAndStable(this.fixture.currencies[this.$store.getters.operatingAsset].assets['away']) > 0)
+					return true;
+				if (this.sumPendingAndStable(this.fixture.currencies[this.$store.getters.operatingAsset].assets['canceled']) > 0)
+					return true;
+				return false;
 			} else
-				return 0;
-		},
-		away_asset: function(){
-			if (this.fixture.assets){
-				return this.sumBalances(this.$store.state.wallet_balances[this.fixture.assets.away])
-			} else
-				return 0;
-		},
-		draw_asset: function(){
-			if (this.fixture.assets){
-				return this.sumBalances(this.$store.state.wallet_balances[this.fixture.assets.draw])
-			} else
-				return 0;
-		},
-		canceled_asset: function(){
-			if (this.fixture.assets){
-				return this.sumBalances(this.$store.state.wallet_balances[this.fixture.assets.canceled])
-			} else
-				return 0;
-		},
+				return false;
+		}
 	},
 	created() {
 
 	},
 	methods:{
+		sumPendingAndStable(asset){
+			if (!this.$store.state.wallet_balances[asset])
+				return 0;
+			return this.$store.state.wallet_balances[asset].stable + this.$store.state.wallet_balances[asset].pending
+		},
 		sumBalances: function(balances){
 			if(!balances)
 				return 0;

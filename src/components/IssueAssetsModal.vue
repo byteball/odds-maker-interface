@@ -11,17 +11,17 @@
 					<b-numberinput v-model="amount" :max="available_amount" :controls="false" :step="0.000000001"></b-numberinput>
 				</b-field>
 				<div>
-					Available: <asset-or-byte-amount :amount="available_amount" /> GB
+					Available: <asset-or-byte-amount :amount="available_amount" /> {{$store.getters.operatingSymbol}}
 				</div>
 				<div>
-					{{amount}} GB on {{fixtures.length}} fixture{{fixtures.length > 1 ? 's' : ''}} = <asset-or-byte-amount :amount="total_amount" /> GB
+					{{amount}} {{$store.getters.operatingSymbol}} on {{fixtures.length}} fixture{{fixtures.length > 1 ? 's' : ''}} = <asset-or-byte-amount :amount="total_amount" /> {{$store.getters.operatingSymbol}}
 				</div>
 				<div class="p-1" v-if="!trigger_unit">
 					<b-button v-if="total_amount && total_amount < available_amount && !isIssuing" class="is-primary" @click="issueAssets" > Issue assets</b-button>
 				</div>
 				<div v-else>
 					<span class="mr-05">Assets requested, trigger unit: </span> 
-					<a :href="conf.explorer_url +'#' + trigger_unit" target="_blank"><b-icon icon="open-in-new"/></a>
+					<a :href="explorer_url +'#' + trigger_unit" target="_blank"><b-icon icon="open-in-new"/></a>
 				</div>
 			</div>
 		</section>
@@ -56,15 +56,17 @@ const issuing_fees = 10000;
 			},
 			amount_field_type: function(){
 				return this.total_amount >= this.available_amount ? 'is-danger' : '';
-
 			},
 			total_amount: function(){
-				return this.amount * this.fixtures.length * conf.gb_to_bytes + issuing_fees * this.fixtures.length
+				return this.amount * this.fixtures.length * 10 ** this.$store.getters.operatingDecimals + (this.$store.getters.operatingAsset == 'base' ? issuing_fees : 0)* this.fixtures.length;
 			},
 			available_amount: function(){
-				if (!this.$store.state.wallet_balances.base)
+				if (!this.$store.state.wallet_balances || !this.$store.state.wallet_balances[this.$store.getters.operatingAsset])
 					return 0;
-				return (this.$store.state.wallet_balances.base.pending + this.$store.state.wallet_balances.base.stable);
+				return (this.$store.state.wallet_balances[this.$store.getters.operatingAsset].pending + this.$store.state.wallet_balances[this.$store.getters.operatingAsset].stable);
+			},
+			explorer_url: function(){
+				return this.$store.state.connections.testnet ? conf.explorer_url.testnet : conf.explorer_url.mainnet;
 			}
 		},
 		created(){
@@ -80,7 +82,8 @@ const issuing_fees = 10000;
 		methods: {
 			issueAssets: async function(){
 				this.isIssuing = true;
-				const err = await core.issueAssets(this.fixtures, Math.floor(this.amount*conf.gb_to_bytes) + issuing_fees, this.callbackCompleted);
+				const amount = Math.floor(this.amount * 10 ** this.$store.getters.operatingDecimals) + (this.$store.getters.operatingAsset == 'base' ? issuing_fees : 0);
+				const err = await core.issueAssets(this.fixtures, amount, this.callbackCompleted);
 				if (err)
 					this.popToast(err);
 				this.isIssuing = false;

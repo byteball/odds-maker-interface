@@ -49,16 +49,19 @@ export default {
 	},
 	computed:{
 		has_odex_balance: function(){
-			return this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedHomeTeamName]
-			|| this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedAwayTeamName]
-			|| this.$store.state.odex_balances[this.fixture.feedName+ '-DRAW']
-			|| this.$store.state.odex_balances[this.fixture.feedName+ '-CANCELED']
+			return this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedHomeTeamName + '-' + this.$store.getters.operatingSymbol] 
+			|| this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedAwayTeamName+ '-' + this.$store.getters.operatingSymbol]
+			|| this.$store.state.odex_balances[this.fixture.feedName+ '-DRAW' + '-' + this.$store.getters.operatingSymbol]
+			|| this.$store.state.odex_balances[this.fixture.feedName+ '-CANCELED' + '-' + this.$store.getters.operatingSymbol]
 		},
 		has_wallet_balance: function(){
-			return this.fixture.assets && (this.$store.state.wallet_balances[this.fixture.assets.home]
-			|| this.$store.state.wallet_balances[this.fixture.assets.draw]
-			|| this.$store.state.wallet_balances[this.fixture.assets.away]
-			|| this.$store.state.wallet_balances[this.fixture.assets.canceled])
+			return this.fixture.currencies && this.fixture.currencies[this.$store.getters.operatingAsset] 
+			&& this.fixture.currencies[this.$store.getters.operatingAsset].assets
+			&& this.$store.state.wallet_balances
+			&& (this.$store.state.wallet_balances[this.fixture.currencies[this.$store.getters.operatingAsset].assets.home]
+			|| this.$store.state.wallet_balances[this.fixture.currencies[this.$store.getters.operatingAsset].assets.draw]
+			|| this.$store.state.wallet_balances[this.fixture.currencies[this.$store.getters.operatingAsset].assets.away]
+			|| this.$store.state.wallet_balances[this.fixture.currencies[this.$store.getters.operatingAsset].assets.canceled])
 		},
 		has_cancel_odds:function(){
 			return this.$store.state.odds_configuration && this.$store.state.odds_configuration.with_cancel_championships[this.fixture.championship]

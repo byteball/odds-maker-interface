@@ -56,7 +56,7 @@ export default {
 		is_testnet: function(){
 			this.onChange();
 		}
-},
+	},
 	methods:{
 		deleteCredentials(){
 			for (var key in this.credentials){

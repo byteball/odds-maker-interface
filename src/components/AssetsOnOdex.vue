@@ -1,5 +1,5 @@
 <template>
-	<div v-if="fixture.assets">
+	<div v-if="fixture.currencies && fixture.currencies[$store.getters.operatingAsset] && fixture.currencies[$store.getters.operatingAsset].assets">
 		<b-icon icon="arrow-left-right-bold" class="mr-05"/>
 		<b-tooltip type="is-info" label="home asset on Odex"><asset-or-byte-amount :amount="home_asset" class="mr-05"/></b-tooltip>
 		<b-tooltip v-if="has_draw_odds" type="is-info" label="draw asset on Odex"><asset-or-byte-amount  :amount="draw_asset" class="mr-05"/></b-tooltip>
@@ -32,20 +32,19 @@ export default {
 			return this.$store.state.odds_configuration && this.$store.state.odds_configuration.with_draw_championships[this.fixture.championship]
 		},
 		home_asset: function(){
-			return this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedHomeTeamName] || 0;
+			return this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedHomeTeamName + '-' + this.$store.getters.operatingSymbol] || 0;
 		},
 		away_asset: function(){
-			return this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedAwayTeamName] || 0;
+			return this.$store.state.odex_balances[this.fixture.feedName+ '-' + this.fixture.feedAwayTeamName + '-' + this.$store.getters.operatingSymbol] || 0;
 		},
 		draw_asset: function(){
-			return this.$store.state.odex_balances[this.fixture.feedName+ '-DRAW'] || 0;
+			return this.$store.state.odex_balances[this.fixture.feedName+ '-DRAW'+ '-' + this.$store.getters.operatingSymbol] || 0;
 		},
 		canceled_asset: function(){
-			return this.$store.state.odex_balances[this.fixture.feedName+ '-CANCELED'] || 0;
+			return this.$store.state.odex_balances[this.fixture.feedName+ '-CANCELED'+ '-' + this.$store.getters.operatingSymbol] || 0;
 		},
 	},
 	created() {
-
 	},
 	methods:{
 

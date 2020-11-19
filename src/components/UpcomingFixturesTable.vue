@@ -41,8 +41,10 @@
 			</b-table-column>
 
 			<b-table-column label="Odds"  field="odds" custom-key='odds' >
-				<my-odds :fixture="props.row" />
-				<new-odds :fixture="props.row" />
+				<div v-if="props.row.currencies && props.row.currencies[$store.getters.operatingAsset] && props.row.currencies[$store.getters.operatingAsset].assets">
+					<my-odds :fixture="props.row" />
+					<new-odds :fixture="props.row" />
+				</div>
 			</b-table-column>
 
 		</template>

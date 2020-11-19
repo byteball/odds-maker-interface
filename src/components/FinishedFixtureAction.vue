@@ -1,7 +1,9 @@
 <template>
 	<div class="buttons">
-		<b-button v-if="has_winning_asset_on_odex" @click="transferToWallet"  class="is-primary" size="is-small">transfer winning assets to wallet</b-button>
-		<b-button v-if="has_winning_asset_on_wallet" @click="redeemWinningAsset" class="is-primary" size="is-small">redeem winning assets from wallet</b-button>
+		<div v-if="fixture.currencies && fixture.currencies[$store.getters.operatingAsset] && fixture.currencies[$store.getters.operatingAsset].assets">
+			<b-button v-if="has_winning_asset_on_odex" @click="transferToWallet"  class="is-primary" size="is-small">transfer winning assets to wallet</b-button>
+			<b-button v-if="has_winning_asset_on_wallet" @click="redeemWinningAsset" class="is-primary" size="is-small">redeem winning assets from wallet</b-button>
+		</div>
 	</div>
 </template>
 
@@ -11,9 +13,6 @@ import TransferToWalletModal from './TransferAssetsToWalletModal.vue'
 import RedeemAssetModal from './RedeemAssetModal.vue'
 
 import { ModalProgrammatic } from 'buefy'
-
-//const moment = require('moment');
-//const conf = require('../js/conf.js');
 
 export default {
 	components: {
@@ -28,10 +27,15 @@ export default {
 	},
 	computed:{
 		has_winning_asset_on_wallet: function(){
-			return this.fixture.winning_asset && this.$store.state.wallet_balances[this.fixture.winning_asset];
+			const winning_asset = this.fixture.currencies[this.$store.getters.operatingAsset].assets.winning_asset;
+			return winning_asset && this.$store.state.wallet_balances[winning_asset];
 		},
 		has_winning_asset_on_odex: function(){
-			return this.fixture.winning_symbol && this.$store.state.odex_balances[this.fixture.winning_symbol];
+			const winning_symbol = this.fixture.currencies[this.$store.getters.operatingAsset].assets.winning_symbol;
+			console.log(winning_symbol)
+						console.log(this.$store.state.odex_balances[winning_symbol])
+
+			return winning_symbol && this.$store.state.odex_balances[winning_symbol];
 		},
 
 	},

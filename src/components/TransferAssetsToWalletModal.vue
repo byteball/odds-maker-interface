@@ -9,31 +9,11 @@
 			<div class="container">
 				<span class="mr-05">Request to transfer winning assets from Odex to wallet </span>
 				<div v-for="fixture in fixtures" class="row" :key="fixture.feedName">
-					<div v-if="fixture.assets">
-						<div v-if="fixture.winning_asset==fixture.assets.home"> {{ fixture.assets.home_symbol }}
-							<span v-if="assocRequested[fixture.assets.home]"> - requested: 
-								<asset-or-byte-amount :amount="assocRequested[fixture.assets.home].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.home].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-							</span>
-						</div>
-						<div v-if="fixture.winning_asset==fixture.assets.away">{{ fixture.assets.away_symbol }}
-							<span v-if="assocRequested[fixture.assets.away]"> - requested:
-								<asset-or-byte-amount :amount="assocRequested[fixture.assets.away].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.away].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-								</span>
-						</div>
-						<div v-if="fixture.winning_asset==fixture.assets.canceled">{{ fixture.assets.canceled_symbol }}
-							<span v-if="assocRequested[fixture.assets.canceled]"> - requested:
-								<asset-or-byte-amount :amount="assocRequested[fixture.assets.canceled].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.canceled].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-							</span>
-						</div>
-						<div v-if="fixture.winning_asset==fixture.assets.draw">{{ fixture.assets.draw_symbol }}
-							<span v-if="assocRequested[fixture.assets.draw]"> - requested:
-								<asset-or-byte-amount :amount="assocRequested[fixture.assets.draw].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocRequested[fixture.assets.draw].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-							</span>
-						</div>
+					<div v-if="fixture.currencies && fixture.currencies[$store.getters.operatingAsset] && fixture.currencies[$store.getters.operatingAsset].assets">
+						<requested-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocRequested="assocRequested" type="home" />
+						<requested-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocRequested="assocRequested" type="away" />
+						<requested-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocRequested="assocRequested" type="canceled" />
+						<requested-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocRequested="assocRequested" type="draw" />
 					</div>
 				</div>
 				<div v-if="isTransferCompleted" class="mt-1">
@@ -50,11 +30,11 @@
 <script>
 const conf = require('../js/conf.js')
 import core from '../js/core.js'
-import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
-
+import RequestedItem from './TransferAssetsToWalletModalRequestedItem.vue'
+ 
 	export default {
 		components:{
-			AssetOrByteAmount
+			RequestedItem
 		},
 		props: {
 			fixtures: Array
@@ -67,7 +47,9 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 			}
 		},
 		computed: {
-
+			explorer_url: function(){
+				return this.$store.state.connections.testnet ? conf.explorer_url.testnet : conf.explorer_url.mainnet;
+			}
 		},
 		async created(){
 			if (this.fixtures.length === 0){

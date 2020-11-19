@@ -15,7 +15,7 @@ export default new Vuex.Store({
 		isConnected: false,
 		isConnecting : false,
 		myOdexOddsByAsset : {},
-		newOdds: {}
+		newOdds: {},
 	},
 	mutations: {
 		setConnections(state, data){
@@ -52,8 +52,19 @@ export default new Vuex.Store({
 			Vue.delete(state.myOdexOddsByAsset, asset)
 		}
 	},
+	getters: {
+		operatingAsset: (state) => {
+			return state.odds_configuration.currency.asset;
+		},
+		operatingSymbol: (state) => {
+			return state.odds_configuration.currency.symbol;
+		},
+		operatingDecimals: (state) => {
+			return state.odds_configuration.currency.decimals;
+		},
+	},
 	actions: {
-  },
-  modules: {
-  }
+	},
+	modules: {
+	}
 })

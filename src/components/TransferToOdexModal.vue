@@ -9,31 +9,11 @@
 			<div class="container">
 				<span class="mr-05">Transferring assets to Odex </span>
 				<div v-for="fixture in fixtures" class="row" :key="fixture.feedName">
-					<div v-if="fixture.assets">
-						<div>{{ fixture.assets.home_symbol }}
-							<span v-if="assocTransferred[fixture.assets.home]"> - transferred: 
-								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.home].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.home].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-							</span>
-						</div>
-						<div>{{ fixture.assets.away_symbol }}
-							<span v-if="assocTransferred[fixture.assets.away]"> - transferred:
-								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.away].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.away].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-								</span>
-						</div>
-						<div>{{ fixture.assets.draw_symbol }}
-							<span v-if="assocTransferred[fixture.assets.canceled]"> - transferred:
-								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.canceled].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.canceled].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-							</span>
-						</div>
-						<div>{{ fixture.assets.canceled_symbol }}
-							<span v-if="assocTransferred[fixture.assets.draw]"> - transferred:
-								<asset-or-byte-amount :amount="assocTransferred[fixture.assets.draw].amount"/> 
-								<a :href="conf.explorer_url +'#' + assocTransferred[fixture.assets.draw].unit" target="_blank"><b-icon icon="open-in-new" /></a>
-							</span>
-						</div>
+					<div v-if="fixture.currencies && fixture.currencies[$store.getters.operatingAsset] && fixture.currencies[$store.getters.operatingAsset].assets">
+						<transferred-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocTransferred="assocTransferred" type="home" />
+						<transferred-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocTransferred="assocTransferred" type="away" />
+						<transferred-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocTransferred="assocTransferred" type="draw" />
+						<transferred-item :assocAssets="fixture.currencies[$store.getters.operatingAsset].assets" :assocTransferred="assocTransferred" type="canceled" />
 					</div>
 				</div>
 				<div v-if="isTransferCompleted" class="mt-1">
@@ -51,11 +31,11 @@
 <script>
 const conf = require('../js/conf.js')
 import core from '../js/core.js'
-import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
+import TransferredItem from './TransferToOdexModalTransferredItem.vue'
 
 	export default {
 		components:{
-			AssetOrByteAmount
+			TransferredItem
 		},
 		props: {
 			fixtures: Array
@@ -68,7 +48,9 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 			}
 		},
 		computed: {
-
+			explorer_url: function(){
+				return this.$store.state.connections.testnet ? conf.explorer_url.testnet : conf.explorer_url.mainnet;
+			}
 		},
 		async created(){
 			if (this.fixtures.length === 0){
@@ -80,9 +62,9 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 			this.popToast(err);
 		},
 		methods: {
-			callbackTransferred: function(asset, amount, unit){
-				console.log('transferred ' +asset + ' ' + amount);
-				this.$set(this.assocTransferred, asset,{
+			callbackTransferred: function(outcome, amount, unit){
+				console.log('transferred ' +outcome + ' ' + amount);
+				this.$set(this.assocTransferred, outcome,{
 					amount,
 					unit
 				});

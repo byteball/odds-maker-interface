@@ -29,7 +29,8 @@
 </template>
 <script>
 const isUrl = require('is-url')
-import core from '../js/core.js'
+import { EventBus } from '../js/event-bus.js';
+
 export default {
   props: {
 	},
@@ -82,21 +83,10 @@ export default {
 	methods:{
 
 		connect: async function(){
-			const err = await core.start(Object.assign(
-				{},
-				this.$store.state.connections,
-				this.$store.state.credentials,
-			));
-			if (err)
-				this.$buefy.toast.open({
-					duration: 5000,
-					message: err,
-					position: 'is-bottom',
-					type: 'is-danger'
-				})
+			EventBus.$emit('connect');
 		},
 		disconnect: function(){
-			core.stop();
+			EventBus.$emit('disconnect');
 		},
 
 		saveConnections(){

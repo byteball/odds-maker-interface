@@ -3,7 +3,7 @@
 		<p class="title is-3 p-1">Odds maker interface</p>
 		<status />
 
-		<b-tabs>
+		<b-tabs v-model="selectedTab">
 			<b-tab-item label="Upcoming fixtures">
 				<upcoming-fixtures-table :fixtures="upcomingFixtures" />
 			</b-tab-item>
@@ -25,6 +25,7 @@ import Settings from './components/Settings.vue'
 import Status from './components/Status.vue'
 import moment from 'moment';
 import conf from './js/conf.js';
+import { EventBus } from './js/event-bus.js';
 
 import core from './js/core.js'
 import Vue from 'vue';
@@ -41,12 +42,35 @@ export default {
 		return {
 			upcomingFixtures: [],
 			finishedFixtures: [],
+			selectedTab: 2, // open on settings,
+			timerId: null,
 		}
 	},
 	created(){
 		core.initStore(this.$store);
 
-		Vue.nextTick(async ()=> { // we wait next tick for the state variables to be loaded
+		EventBus.$on('connect', this.connect);
+		EventBus.$on('disconnect', this.disconnect);
+
+		Vue.nextTick(this.connect); // we wait next tick for the state variables to be loaded
+		
+	},
+	methods:{
+		connect: async function(){
+
+			const err = await core.start(Object.assign(
+				{},
+				this.$store.state.connections,
+				this.$store.state.credentials,
+			));
+			if (err)
+				this.$buefy.toast.open({
+					duration: 5000,
+					message: err,
+					position: 'is-bottom',
+					type: 'is-danger'
+				});
+			
 			if (!this.$store.state.connections.bComplete)
 				return this.$buefy.toast.open({
 						duration: 5000,
@@ -62,56 +86,64 @@ export default {
 						type: 'is-danger'
 				})
 
-			const err = await core.start(Object.assign(
-				{},
-				this.$store.state.connections,
-				this.$store.state.credentials,
-			));
-			if (err)
-				this.$buefy.toast.open({
-					duration: 5000,
-					message: err,
-					position: 'is-bottom',
-					type: 'is-danger'
-				})
-		})
-		this.getFixtures();
-		setInterval(this.getFixtures, 2*60*1000);
-	},
-	methods:{
+			this.selectedTab = 0; // upcoming fixtures
+			this.getFixtures();
+			this.timerId = setInterval(this.getFixtures, 2*60*1000);
 
+		},
+		disconnect: async function(){
+			core.stop();
+			this.finishedFixtures = [];
+			this.upcomingFixtures = [];
+			clearInterval(this.timerId);
+		},
 		getFixtures: function(){
-			this.axios.get('/api/fixtures').then((response) => {
+			this.axios.get(this.$store.state.connections.betting_api +'/fixtures').then((response) => {
 				const allFixtures = response.data;
+				const supportedOperatingAssets = {};
+				const supportedOperatingCurrencies = conf.currencies[this.$store.state.connections.testnet ? 'testnet' : 'mainnet'];
+				for (var key in supportedOperatingCurrencies){
+					supportedOperatingAssets[supportedOperatingCurrencies[key].asset] = key;
+				}
+				
 				allFixtures.forEach((fixture)=>{
+					fixture.dateMoment = moment(fixture.date);
 					fixture.feedName = this.getFeedName(fixture);
-					if (fixture.assets){
-						fixture.assets.home_symbol = fixture.feedName + '-' + fixture.feedHomeTeamName;
-						fixture.assets.away_symbol = fixture.feedName + '-' + fixture.feedAwayTeamName;
-						fixture.assets.draw_symbol = fixture.feedName + '-DRAW';
-						fixture.assets.canceled_symbol = fixture.feedName + '-CANCELED';
 
-						if (fixture.result){
-							if (fixture.result === fixture.feedName.split('_')[1]){
-								fixture.winning_asset = fixture.assets.home;
-								fixture.winning_symbol = fixture.assets.home_symbol;
-							}
-							else if (fixture.result === fixture.feedName.split('_')[2]){
-								fixture.winning_asset = fixture.assets.away;
-								fixture.winning_symbol = fixture.assets.away_symbol;
-							}
-							else if (fixture.result === 'draw'){
-								fixture.winning_asset = fixture.assets.draw;
-								fixture.winning_symbol = fixture.assets.draw_symbol;
-							}
-							else if (fixture.result === 'canceled'){
-								fixture.winning_asset = fixture.assets.canceled;
-								fixture.winning_symbol = fixture.assets.canceled_symbol;
+					if (fixture.currencies){
+						for(var key in fixture.currencies){
+							const assets = fixture.currencies[key].assets;
+							if (!assets)
+								continue;
+							const operatingSymbol = supportedOperatingAssets[key]
+							if(!operatingSymbol)
+								continue;
+							assets.home_symbol = fixture.feedName + '-' + fixture.feedHomeTeamName + '-' + operatingSymbol;
+							assets.away_symbol = fixture.feedName + '-' + fixture.feedAwayTeamName+ '-' + operatingSymbol;
+							assets.draw_symbol = fixture.feedName + '-DRAW'+ '-' + operatingSymbol;
+							assets.canceled_symbol = fixture.feedName + '-CANCELED'+ '-' + operatingSymbol;
+
+							if (fixture.result){
+								if (fixture.result === fixture.feedName.split('_')[1]){
+									assets.winning_asset = assets.home;
+									assets.winning_symbol = assets.home_symbol;
+								}
+								else if (fixture.result === fixture.feedName.split('_')[2]){
+									assets.winning_asset = assets.away;
+									assets.winning_symbol = assets.away_symbol;
+								}
+								else if (fixture.result === 'draw'){
+									assets.winning_asset = assets.draw;
+									assets.winning_symbol = assets.draw_symbol;
+								}
+								else if (fixture.result === 'canceled'){
+									assets.winning_asset = assets.canceled;
+									assets.winning_symbol = assets.canceled_symbol;
+								}
 							}
 						}
-
 					}
-					fixture.dateMoment = moment(fixture.date);
+
 					if (!this.$store.state.newOdds[fixture.feedName])
 						this.$store.commit('setNewOdds', {feedName: fixture.feedName, odds:{ home:1,draw:1, away:1, canceled: 1}});
 				});
