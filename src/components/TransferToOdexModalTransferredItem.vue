@@ -1,7 +1,7 @@
 <template>
 	<div>{{ assocAssets[type + '_symbol'] }}
 		<span v-if="assocTransferred[assocAssets[type]]"> - transferred: 
-			<asset-or-byte-amount :amount="assocTransferred[assocAssets[type]].amount"/> {{$store.getters.operatingSymbol}}
+			<asset-or-byte-amount :amount="assocTransferred[assocAssets[type]].amount"/>
 			<a :href="explorer_url +'#' + assocTransferred[assocAssets[type]].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 		</span>
 	</div>

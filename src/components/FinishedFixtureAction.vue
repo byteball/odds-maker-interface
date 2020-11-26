@@ -28,13 +28,12 @@ export default {
 	computed:{
 		has_winning_asset_on_wallet: function(){
 			const winning_asset = this.fixture.currencies[this.$store.getters.operatingAsset].assets.winning_asset;
-			return winning_asset && this.$store.state.wallet_balances[winning_asset];
+			console.log(this.$store.state.wallet_balances[winning_asset])
+			return winning_asset && this.$store.state.wallet_balances[winning_asset] 
+			&& (this.$store.state.wallet_balances[winning_asset].pending > 0 || this.$store.state.wallet_balances[winning_asset].stable > 0);
 		},
 		has_winning_asset_on_odex: function(){
 			const winning_symbol = this.fixture.currencies[this.$store.getters.operatingAsset].assets.winning_symbol;
-			console.log(winning_symbol)
-						console.log(this.$store.state.odex_balances[winning_symbol])
-
 			return winning_symbol && this.$store.state.odex_balances[winning_symbol];
 		},
 

@@ -49,7 +49,7 @@ import AssetOrByteAmount from './commons/AssetOrByteAmount.vue'
 		methods: {
 			transfer: function(){
 				this.is_requesting = true;
-				core.transferBytesToWallet(this.amount * 10 ** this.$store.getters.operatingDecimals, (err, unit)=>{
+				core.transferOperatingAssetToWallet(this.amount * 10 ** this.$store.getters.operatingDecimals, (err, unit)=>{
 					this.is_requesting = false;
 					if (err)
 						return this.$buefy.toast.open({

@@ -10,8 +10,8 @@
 				<span class="mr-05">Request to redeem winning asset </span>
 				<div v-for="fixture in fixtures" class="row" :key="fixture.feedName">
 					<div v-if="fixture.result && fixture.currencies[$store.getters.operatingAsset] && fixture.currencies[$store.getters.operatingAsset].assets">
-						{{ fixture.currencies[$store.getters.operatingAsset].assets.winning_symbol }} - requested
-						<span v-if="assocTransferred[fixture.currencies[$store.getters.operatingAsset].assets.winning_asset]"> 
+						{{ fixture.currencies[$store.getters.operatingAsset].assets.winning_symbol }}
+						<span v-if="assocTransferred[fixture.currencies[$store.getters.operatingAsset].assets.winning_asset]"> - requested
 							<asset-or-byte-amount :amount="assocTransferred[fixture.currencies[$store.getters.operatingAsset].assets.winning_asset].amount"/> 
 							<a :href="explorer_url +'#' + assocTransferred[fixture.currencies[$store.getters.operatingAsset].assets.winning_asset].unit" target="_blank"><b-icon icon="open-in-new" /></a>
 						</span>

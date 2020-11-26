@@ -127,10 +127,12 @@ export default {
 								if (fixture.result === fixture.feedName.split('_')[1]){
 									assets.winning_asset = assets.home;
 									assets.winning_symbol = assets.home_symbol;
+									fixture.result = 'home';
 								}
 								else if (fixture.result === fixture.feedName.split('_')[2]){
 									assets.winning_asset = assets.away;
 									assets.winning_symbol = assets.away_symbol;
+									fixture.result = 'away';
 								}
 								else if (fixture.result === 'draw'){
 									assets.winning_asset = assets.draw;

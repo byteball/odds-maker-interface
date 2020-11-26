@@ -15,7 +15,7 @@
 				<b-input @input="onChange" v-model="connections.betting_api" :disabled="!is_editing_allowed" autocomplete="off"></b-input>
 			</b-field>
 			<div class="field">
-				<b-checkbox @input="onChange" v-model="connections.testnet">
+				<b-checkbox @input="onChange" :disabled="!is_editing_allowed" v-model="connections.testnet">
 				testnet
 				</b-checkbox>
 			</div>

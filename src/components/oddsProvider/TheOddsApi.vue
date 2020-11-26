@@ -69,7 +69,7 @@ export default {
 			the_odds_api_key: '',
 			is_key_valid: false,
 			wallet_address: '',
-			championships: ['PD', 'SA', 'PL', 'BL1', 'NBA', 'BSA'],
+			championships: ['PD', 'SA', 'PL', 'BL1', 'NBA', 'BSA','L1','NFL'],
 			regions: ['uk', 'au', 'eu', 'us'],
 			selected_region: '',
 			selected_championship: '',

@@ -139,7 +139,7 @@ async function transferOperatingAssetToExternalAddress(amount, address, callback
 
 }
 
-async function transferBytesToWallet(amount, callbackCompleted){
+async function transferOperatingAssetToWallet(amount, callbackCompleted){
 	const client = new obyte.Client(userConf.hub_ws_url, userConf);
 	const params = [
 		{
@@ -381,13 +381,11 @@ async function stop(){
 
 
 async function cancelOdexOddsForFixture(fixture){
-	if (!fixture.assets)
-		return console.log("no assets defined for this fixture");
 	await Promise.all([
-		cancelOdexOddsForAsset(fixture.assets['home']),
-		cancelOdexOddsForAsset(fixture.assets['away']),
-		cancelOdexOddsForAsset(fixture.assets['draw']),
-		cancelOdexOddsForAsset(fixture.assets['canceled'])
+		cancelOdexOddsForAsset(fixture.currencies[store.getters.operatingAsset].assets['home']),
+		cancelOdexOddsForAsset(fixture.currencies[store.getters.operatingAsset].assets['away']),
+		cancelOdexOddsForAsset(fixture.currencies[store.getters.operatingAsset].assets['draw']),
+		cancelOdexOddsForAsset(fixture.currencies[store.getters.operatingAsset].assets['canceled'])
 	]);
 }
 
@@ -480,5 +478,5 @@ exports.transferAssetToWallet = transferAssetToWallet;
 exports.setOdexOdds = setOdexOdds;
 exports.cancelOdexOddsForFixture = cancelOdexOddsForFixture;
 exports.redeemWinningAsset = redeemWinningAsset;
-exports.transferBytesToWallet = transferBytesToWallet;
+exports.transferOperatingAssetToWallet = transferOperatingAssetToWallet;
 exports.transferOperatingAssetToExternalAddress = transferOperatingAssetToExternalAddress;

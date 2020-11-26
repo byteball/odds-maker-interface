@@ -62,7 +62,7 @@
 		"Sheffield United" : "SFW"
 	},
 	"L1": {
-		"key": "LIGUE_ONE",
+		"key": "soccer_france_ligue_one",
 		"AS Monaco": "AMO",
 		"Toulouse": "TOU",
 		"Paris Saint Germain": "PSG",
@@ -84,7 +84,7 @@
 		"Nîmes Olympique" : "NIM"
 	},
 	"BL1": {
-		"key": "BUNDESLIGA",
+		"key": "soccer_germany_bundesliga",
 		"Bayern Munich": "BAY",
 		"Bayer Leverkusen": "B04",
 		"Augsburg": "AUG",

@@ -10,10 +10,6 @@ exports.explorer_url = {
 	testnet: 'https://testnetexplorer.obyte.org/',
 	mainnet: 'https://explorer.obyte.org/'
 };
-exports.odex_url = {
-	testnet: 'https://testnet.odex.ooo/',
-	mainnet: 'https://odex.ooo/'
-};
 
 exports.currencies = {
 	testnet: {

@@ -84,7 +84,7 @@ export default {
 			return this.$store.state.myOdexOddsByAsset[this.fixture.currencies[this.$store.getters.operatingAsset].assets.canceled] || null;
 		},
 		odex_url: function(){
-			return this.$store.state.connections.testnet ? conf.odex_url.testnet : conf.odex_url.mainnet;
+			return this.$store.state.connections.odex_http_base_url;
 		}
 	},
 	created() {
